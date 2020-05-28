@@ -1,48 +1,60 @@
 <template>
   <div id="app">
     <Toolbox></Toolbox>
-    <canvas></canvas>
+    <Engineer style="display:none"></Engineer>
+    <MemoryView
+      :addr="0x6882522"
+      :content="memdata"
+      :foldaddrs="foldaddrs"
+      :selections="selections"
+      style="margin-top: 100px; width: 80%; height: 300px"></MemoryView>
   </div>
 </template>
 
 <script>
 import Toolbox from './components/Toolbox.vue'
-import * as PIXI from 'pixi.js';
+import Engineer from './components/Engineer.vue'
+import MemoryView from './domains/computer/Memory.vue'
 
 export default {
     name: 'App',
     components: {
-        Toolbox
+        Toolbox,
+        Engineer,
+        MemoryView
     },
-    mounted() {
-        const app = new PIXI.Application( {
-            resizeTo: window,
-            view: this.$el.querySelector( 'canvas' )
-        } )
-        
-        // load the texture we need
-        app.loader.add('bunny', require('./assets/bunny.png')).load((loader, resources) => {
-            // This creates a texture from a 'bunny.png' image
-            const bunny = new PIXI.Sprite(resources.bunny.texture)
-
-            // Setup the position of the bunny
-            bunny.x = app.renderer.width / 2
-            bunny.y = app.renderer.height / 2
-
-            // Rotate around the center
-            bunny.anchor.x = 0.5
-            bunny.anchor.y = 0.5
-
-            // Add the bunny to the scene we are building
-            app.stage.addChild(bunny)
-
-            // Listen for frame updates
-            app.ticker.add(() => {
-                // each frame we spin the bunny around a bit
-                bunny.rotation += 0.01
-            })
-        })
+    created() {
+        this.memdata.fill( 0xf0 )
     },
+    data() {
+        return {
+            memdata: Array(300),
+            selections: [
+                {
+                    addr: 0x6882526,
+                    size: 4
+                },
+                {
+                    addr: 0x6882546,
+                    size: 0x42
+                },
+                {
+                    addr: 0x68825b6,
+                    size: 0x10
+                },
+                {
+                    addr: 0x68825f0,
+                    size: 0x40
+                },
+            ],
+            foldaddrs: [
+                {
+                    addr: 0x6882546,
+                    size: 0x42
+                }
+            ]
+        }
+    }
 }
 </script>
 
@@ -64,4 +76,7 @@ html, body {
     overflow: hidden;
 }
 
+canvas {
+    z-order: -1;
+}
 </style>

@@ -17,6 +17,8 @@ export default {
   },
   methods: {
       handleRun() {
+          var rect = this.$el.getBoundingClientRect()
+          alert(rect.width)
       },
       handlePause() {
       },
