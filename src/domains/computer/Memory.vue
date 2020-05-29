@@ -1,19 +1,26 @@
 <template>
   <div class="mem-card">
     <div class="mem-header">
-      <label>Addr</label>
-      <input v-model="selAddr" />
-      <label>Size</label>
-      <input v-model="size" />
-      <label>Type</label>
-      <input placeholder="1/2/4/8"/>
-      <label>Value</label>
-      <input placeholder="Value" />
+      <label>@</label>
+      <input
+        minlength="1"
+        maxlength="20"
+        size="16"
+        v-model="displayAddr" />
+      <label></label>
+      <input
+        minlength="1"
+        maxlength="6"
+        size="6"
+        v-model="offset" />
+      <label>:</label>
+      <input
+        v-model="displayValue" />
     </div>
     <div class="mem-body">
       <div class="mem-addr">
       </div>
-      <div class="mem-data">
+      <div class="mem-data" @mouseup="onMouseup">
       </div>
     </div>
   </div>
@@ -31,6 +38,17 @@ function percent( n, t )
     return n / t * 100 + '%'
 }
 
+function toString( v, radix ) {
+
+    const prefix = {
+        10: '',
+        16: '0x',
+        8: '0',
+    }
+
+    return v === undefined ? '' : ( prefix[ radix ] + v.toString( radix ) )
+}
+
 export default {
     name: 'Memory',
     props: {
@@ -44,6 +62,15 @@ export default {
             radix: 16,
             col: 16,
             foldlines: [],
+            selValue: {
+                radix: 16,
+                value: undefined
+            },
+            offset: 0,
+            selAddr: {
+                radix: 16,
+                value: undefined
+            }
         }
     },
     computed: {
@@ -56,17 +83,51 @@ export default {
         row: function () {
             return Math.ceil( ( this.size + this.padding ) / this.col )
         },
-        selAddr: function () {
-            return this.addr + ' (0x' + this.addr.toString( 16 ) + ')'
+        displayAddr: function () {
+            return toString( this.selAddr.value, this.selAddr.radix )
         },
-        selSize: function () {
-            return this.size.toString( this.displayRadix )
+        displayValue: function () {
+            return toString( this.selValue.value, this.selValue.radix )
         },
+        displaySize: function () {
+            return this.selSize
+        }
     },
     mounted() {
+        this.selAddr.value = this.addr
+        this.selSize = this.size
         this.refresh()
     },
     methods: {
+        onMouseup() {
+            let sel = window.getSelection()
+            if ( sel && sel.anchorNode && sel.anchorNode.parentElement.tagName === 'PRE' ) {
+                let begin = sel.anchorOffset
+                let end = sel.focusOffset
+                let size = Math.ceil( ( end - begin ) / 3 )
+                let dn = Math.ceil( ( begin + 1 ) / ( this.col * 3 ) )
+                let m = Math.ceil( ( begin + 1 ) % ( this.col * 3 ) / 3 ) - 1
+                let n = dn - 1
+                for ( let i = 0; i < this.foldlines.length; i ++ )
+                    if ( n > this.foldlines[ i ][ 0 ] )
+                        n += this.foldlines[ i ][ 1 ] - this.foldlines[ i ][ 0 ]
+                    else
+                        break
+                this.selAddr.value = this.addr - this.padding + n * this.col + m
+                this.offset = this.selAddr.value - this.addr
+                if ( ! size )
+                    this.selValue.value = undefined
+                else if ( size < 9 ) {
+                    let v = this.content.slice( this.offset, this.offset + size )
+                    this.selValue.value = 0
+                    for ( let i = 0; i < v.length; i ++ )
+                        this.selValue.value += v[ i ] * ( 2 ** ( i * 8 ) )
+                }
+                else
+                    this.selValue.value = undefined
+
+            }
+        },
         dispRow( n ) {
             let delta = 0
             if ( n === undefined )
@@ -146,20 +207,21 @@ export default {
                 return
             }
 
-            if ( padding >= 0 ) {
+            if ( padding ) {
                 let div = document.createElement( 'div' )
                 div.className = 'selected'
                 div.style.top = percent( dn1, row )
                 div.style.left = percent( padding, this.col )
                 div.style.bottom = percent( row - dn1 - 1, row )
                 div.style.right = tail ? '0' : percent( this.col - size - padding, this.col )
+                dn1 ++
                 el.appendChild( div )
             }
 
-            if ( dn2 - dn1 > 1 ) {
+            if ( dn2 > dn1 ) {
                 let div = document.createElement( 'div' )
                 div.className = 'selected'
-                div.style.top = percent( dn1 + 1, row )
+                div.style.top = percent( dn1, row )
                 div.style.left = '0'
                 div.style.bottom = percent( row - dn2, row )
                 div.style.right = '0'
@@ -215,8 +277,12 @@ export default {
             for ( let i = 1; i < n - 1; i ++ ) {
                 let k = this.isFold( i )
                 if ( k ) {
-                    if ( k == 1 )
-                        lines.push( '...' )
+                    if ( k == 1 ) {
+                        s = []
+                        for ( let j = 0; j < this.col ; j ++, index ++ )
+                            s.push( '..' )
+                        lines.push( s.join( ' ' ) )
+                    }
                     index += this.col
                     continue
                 }
@@ -257,6 +323,10 @@ export default {
     padding: 2px 8px;
 }
 
+.mem-header input {
+    border-width: 0 0 1px 0;
+}
+
 .mem-body {
     display: flex;
     flex-direction: row;
@@ -292,6 +362,7 @@ export default {
     position: absolute;
     background-color: #DCDFE6;
     opacity: .5;
+    z-index: -1;
 }
 
 </style>
