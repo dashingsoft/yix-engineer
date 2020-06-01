@@ -1,21 +1,25 @@
 <template>
   <div class="mem-card">
     <div class="mem-header">
-      <label>@</label>
-      <input
-        minlength="1"
-        maxlength="20"
-        size="16"
-        v-model="displayAddr" />
-      <label></label>
-      <input
-        minlength="1"
-        maxlength="6"
-        size="6"
-        v-model="offset" />
-      <label>:</label>
-      <input
-        v-model="displayValue" />
+      <span><pre>@</pre></span>
+      <radix-input
+        :minlength="1"
+        :maxlength="20"
+        :size="16"
+        v-model="selAddr">
+      </radix-input>
+      <span><pre>:</pre></span>
+      <radix-input
+        :minlength="1"
+        :maxlength="6"
+        :size="6"
+        v-model="offset">
+      </radix-input>
+      <span><pre>=</pre></span>
+      <radix-input
+        :size="16"
+        v-model="selValue">
+      </radix-input>
     </div>
     <div class="mem-body">
       <div class="mem-addr">
@@ -38,17 +42,6 @@ function percent( n, t )
     return n / t * 100 + '%'
 }
 
-function toString( v, radix ) {
-
-    const prefix = {
-        10: '',
-        16: '0x',
-        8: '0',
-    }
-
-    return v === undefined ? '' : ( prefix[ radix ] + v.toString( radix ) )
-}
-
 export default {
     name: 'Memory',
     props: {
@@ -62,15 +55,9 @@ export default {
             radix: 16,
             col: 16,
             foldlines: [],
-            selValue: {
-                radix: 16,
-                value: undefined
-            },
+            selValue: undefined,
             offset: 0,
-            selAddr: {
-                radix: 16,
-                value: undefined
-            }
+            selAddr: undefined
         }
     },
     computed: {
@@ -83,18 +70,9 @@ export default {
         row: function () {
             return Math.ceil( ( this.size + this.padding ) / this.col )
         },
-        displayAddr: function () {
-            return toString( this.selAddr.value, this.selAddr.radix )
-        },
-        displayValue: function () {
-            return toString( this.selValue.value, this.selValue.radix )
-        },
-        displaySize: function () {
-            return this.selSize
-        }
     },
     mounted() {
-        this.selAddr.value = this.addr
+        this.selAddr = this.addr
         this.selSize = this.size
         this.refresh()
     },
@@ -113,18 +91,18 @@ export default {
                         n += this.foldlines[ i ][ 1 ] - this.foldlines[ i ][ 0 ]
                     else
                         break
-                this.selAddr.value = this.addr - this.padding + n * this.col + m
-                this.offset = this.selAddr.value - this.addr
+                this.selAddr = this.addr - this.padding + n * this.col + m
+                this.offset = this.selAddr - this.addr
                 if ( ! size )
-                    this.selValue.value = undefined
+                    this.selValue = undefined
                 else if ( size < 9 ) {
                     let v = this.content.slice( this.offset, this.offset + size )
-                    this.selValue.value = 0
+                    this.selValue = 0
                     for ( let i = 0; i < v.length; i ++ )
-                        this.selValue.value += v[ i ] * ( 2 ** ( i * 8 ) )
+                        this.selValue += v[ i ] * ( 2 ** ( i * 8 ) )
                 }
                 else
-                    this.selValue.value = undefined
+                    this.selValue = undefined
 
             }
         },
@@ -317,14 +295,16 @@ export default {
 
 .mem-header {
     display: flex;
+    margin-left: 6px;
 }
 
 .mem-header > * {
-    padding: 2px 8px;
+    padding: 2px 4px;
 }
 
-.mem-header input {
-    border-width: 0 0 1px 0;
+.mem-header > span > pre {
+    display: inline-block;
+    vertial-align: middle;
 }
 
 .mem-body {
