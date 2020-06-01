@@ -24,7 +24,8 @@ export default {
         MemoryView
     },
     created() {
-        this.memdata.fill( 0xf0 )
+        for (let i = 0; i < this.memdata.length; i ++)
+            this.memdata[i] = i & 0xff
     },
     data() {
         return {

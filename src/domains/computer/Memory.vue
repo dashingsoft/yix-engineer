@@ -4,7 +4,7 @@
       <span><pre>@</pre></span>
       <radix-input
         :minlength="1"
-        :maxlength="20"
+        :maxlength="32"
         :size="16"
         v-model="selAddr">
       </radix-input>
@@ -17,7 +17,7 @@
       </radix-input>
       <span><pre>=</pre></span>
       <radix-input
-        :size="16"
+        :size="20"
         v-model="selValue">
       </radix-input>
     </div>
@@ -91,11 +91,12 @@ export default {
                         n += this.foldlines[ i ][ 1 ] - this.foldlines[ i ][ 0 ]
                     else
                         break
+                this.clearHightlight()
                 this.selAddr = this.addr - this.padding + n * this.col + m
                 this.offset = this.selAddr - this.addr
                 if ( ! size )
-                    this.selValue = undefined
-                else if ( size < 9 ) {
+                    size ++
+                if ( size < 9 ) {
                     let v = this.content.slice( this.offset, this.offset + size )
                     this.selValue = 0
                     for ( let i = 0; i < v.length; i ++ )
@@ -103,7 +104,7 @@ export default {
                 }
                 else
                     this.selValue = undefined
-
+                this.highlight( this.selAddr, size )
             }
         },
         dispRow( n ) {
@@ -257,7 +258,7 @@ export default {
                 if ( k ) {
                     if ( k == 1 ) {
                         s = []
-                        for ( let j = 0; j < this.col ; j ++, index ++ )
+                        for ( let j = 0; j < this.col ; j ++ )
                             s.push( '..' )
                         lines.push( s.join( ' ' ) )
                     }
