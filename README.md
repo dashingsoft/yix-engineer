@@ -2,7 +2,14 @@
 
 ## Project setup
 ```
+vue create .
+vue add element
+
 npm install
+npm install -S vce-builds
+npm install -S pixi.js
+
+npm install -S gettext.js
 ```
 
 ### Compiles and hot-reloads for development
