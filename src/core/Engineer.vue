@@ -27,7 +27,7 @@
       </el-card>
       <el-button
         type="success"
-        @click="state = 'run'"
+        @click="run"
         round>开始</el-button>
     </div>
     <Imager ref="imager"></Imager>
@@ -65,9 +65,9 @@ export default {
 
             // 时间单位，单步时长，默认 2000 毫秒
             timeUnit: 2000,
-            speed: 2,
+            speed: 1,
             speedMax: 10,
-            speedLabels: ['最慢', '', '', '', '', '', '', '', '', '最快'],
+            speedLabels: ['最慢', '慢', '慢', '较慢', '较慢', '较快', '较快', '快', '快', '最快'],
 
             // 运行粒度，
             runLevel: 1
@@ -81,7 +81,8 @@ export default {
         this.$refs.imager.resize( width, height )
 
         this.$on( 'pause', this.onEventPause )
-        this.$on( 'level', this.onEventLevel )
+        this.$on( 'enter', this.onEventEnter )
+        this.$on( 'leave', this.onEventLeave )
         
         window.addEventListener( 'resize', this.onWindowResize, false )
         document.addEventListener( 'keyup', e => {
@@ -114,7 +115,10 @@ export default {
                 this.$emit( 'pause' )
             }
             else if ( e.code === 'Enter' ) {
-                this.$emit( 'level', e.shiftKey )
+                this.$emit( 'enter', e.shiftKey )
+            }
+            else if ( e.code === 'Escape' ) {
+                this.$emit( 'leave', e.shiftKey )
             }
         },
 
@@ -130,9 +134,14 @@ export default {
             this.$message( 'pause event' )
         },
 
-        onEventLevel ( zoom ) {
-            this.$message( 'zoom value is ' + zoom )
-        }
+        onEventEnter ( shift ) {
+            this.$message( 'shift value is ' + shift )
+        },
+
+        onEventLeave ( shift ) {
+            this.$message( 'leave event with shift ' + shift )
+        },
+        
 
     }
 }
