@@ -1,59 +1,27 @@
 <template>
   <div id="app">
-    <Toolbox></Toolbox>
-    <Engineer style="display:none"></Engineer>
-    <MemoryView
-      :addr="0x6882522"
-      :content="memdata"
-      :foldaddrs="foldaddrs"
-      :selections="selections"
-      style="margin-top: 100px; width: 80%; height: 300px"></MemoryView>
+    <Engineer :main-domain="mainDomain" title="运行 foo.c"></Engineer>
   </div>
 </template>
 
 <script>
-import Toolbox from './components/Toolbox.vue'
-import Engineer from './components/Engineer.vue'
-import MemoryView from './domains/computer/Memory.vue'
+import Vue from "vue"
+import Engineer from './core/Engineer.vue'
+import Machine from './domains/computer/Machine.vue'
 
 export default {
     name: 'App',
     components: {
-        Toolbox,
-        Engineer,
-        MemoryView
+        Engineer
     },
     created() {
-        for (let i = 0; i < this.memdata.length; i ++)
-            this.memdata[i] = i & 0xff
+        let PlainComputer = Vue.extend( Machine )
+        this.mainDomain = new PlainComputer()
+        this.mainDomain.$mount()
     },
     data() {
         return {
-            memdata: Array(300),
-            selections: [
-                {
-                    addr: 0x6882526,
-                    size: 4
-                },
-                {
-                    addr: 0x6882546,
-                    size: 0x42
-                },
-                {
-                    addr: 0x68825b6,
-                    size: 0x10
-                },
-                {
-                    addr: 0x68825f0,
-                    size: 0x40
-                },
-            ],
-            foldaddrs: [
-                {
-                    addr: 0x6882546,
-                    size: 0x42
-                }
-            ]
+            mainDomain: null,
         }
     }
 }
@@ -61,23 +29,23 @@ export default {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-
-  position: relative;
-  overflow: hidden;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    overflow: hidden;
+    height: 100%;  
 }
 
 html, body {
     padding: 0;
     margin: 0;
     overflow: hidden;
+    height: 100%;
 }
 
 canvas {
     z-order: -1;
 }
+    
 </style>

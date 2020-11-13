@@ -29,7 +29,7 @@ import {
     DatePicker,
     // TimeSelect,
     // TimePicker,
-    // Popover,
+    Popover,
     // Tooltip,
     Breadcrumb,
     BreadcrumbItem,
@@ -40,7 +40,7 @@ import {
     Tag,
     // Tree,
     // Alert,
-    // Slider,
+    Slider,
     // Icon,
     Row,
     Col,
@@ -49,7 +49,7 @@ import {
     // Spinner,
     Badge,
     Card,
-    // Rate,
+    Rate,
     Steps,
     Step,
     // Carousel,
@@ -114,7 +114,7 @@ Vue.use(TableColumn);
 Vue.use(DatePicker);
 // Vue.use(TimeSelect);
 // Vue.use(TimePicker);
-// Vue.use(Popover);
+Vue.use(Popover);
 // Vue.use(Tooltip);
 Vue.use(Breadcrumb);
 Vue.use(BreadcrumbItem);
@@ -125,7 +125,7 @@ Vue.use(TabPane);
 Vue.use(Tag);
 // Vue.use(Tree);
 // Vue.use(Alert);
-// Vue.use(Slider);
+Vue.use(Slider);
 // Vue.use(Icon);
 Vue.use(Row);
 Vue.use(Col);
@@ -134,7 +134,7 @@ Vue.use(Col);
 // Vue.use(Spinner);
 Vue.use(Badge);
 Vue.use(Card);
-// Vue.use(Rate);
+Vue.use(Rate);
 Vue.use(Steps);
 Vue.use(Step);
 // Vue.use(Carousel);

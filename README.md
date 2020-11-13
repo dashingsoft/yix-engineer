@@ -12,6 +12,12 @@ npm install -S pixi.js
 npm install -S gettext.js
 ```
 
+配置 sass
+```
+npm install -D sass-loader node-sass
+```
+https://vue-loader.vuejs.org/zh/guide/pre-processors.html#sass
+
 ### Compiles and hot-reloads for development
 ```
 npm run serve

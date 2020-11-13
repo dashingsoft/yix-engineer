@@ -1,7 +1,7 @@
 <template>
   <div class="yix-toolbox">
-    <button
-      @click="handleRun">运行</button>
+    <el-button
+      @click="handleRun">运行</el-button>
     <button
       @click="handlePause">暂停</button>
     <button
@@ -10,6 +10,9 @@
 </template>
 
 <script>
+
+// import Vue from 'vue'
+
 export default {
   name: 'Toolbox',
   props: {
@@ -21,6 +24,10 @@ export default {
           alert(rect.width)
       },
       handlePause() {
+          this.$parent.$refs.layout.items[0] = 'el-button'
+          // this.$parent.$refs.layout.items[0] = Vue.extend( Engineer )
+          alert(this.$parent.$refs.layout.items[0])
+          this.$parent.$refs.layout.$forceUpdate()
       },
       handleStep() {
       },
