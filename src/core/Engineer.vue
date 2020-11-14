@@ -150,7 +150,7 @@ export default {
             this.state = 'run'
             this.actionbarVisible = true
             this.mainDomain.run()
-            this.$refs.imager.$emit( 'watch', this.mainDomain.$el )
+            this.$refs.imager.$emit( 'watch', this.mainDomain )
         },
 
         onWindowResize() {
@@ -212,8 +212,8 @@ export default {
         normalize () {
             this.timeCounter ++;
 
-            for ( let x in this.mapstack )
-                x.normalize()
+            for ( let i = 0; i < this.mapstack.length; i ++ )
+                this.mapstack[ i ].normalize()
 
             while ( this.actionstack.length ) {
                 let action = this.actionstack.pop()

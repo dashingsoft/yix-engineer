@@ -2,7 +2,8 @@ import {
 	Matrix4,
 	Object3D,
 	Vector3
-} from "../../../build/three.module.js";
+} from "three";
+
 /**
  * Based on http://www.emagix.net/academic/mscs-project/item/camera-sync-with-css3-and-webgl-threejs
  */
@@ -111,6 +112,22 @@ var CSS3DRenderer = function () {
 
 	};
 
+        var enableViewport = '';
+
+        this.setViewport = function ( left, top, width, height ) {
+                var sx = Math.min( 1.0, width / _width ).toFixed( 2 );
+                var sy = Math.min( 1.0, height / _height ).toFixed( 2 );
+                var sa = Math.max( sx, sy );
+                var tx = Math.round( ( _width - width + left ) * sx );
+                var ty = Math.round( ( _height - height + top ) * sy );
+                enableViewport = ' scale(' + sa + ',' + sa + ') ';
+                enableViewport = ' translate(-' + tx + 'px,' + ty + 'px) ';
+        };
+
+        this.resetViewport = function () {
+                enableViewport = '';
+        };
+
 	function epsilon( value ) {
 
 		return Math.abs( value ) < 1e-10 ? 0 : value;
@@ -168,12 +185,12 @@ var CSS3DRenderer = function () {
 
 			return 'translate(-50%,-50%)' +
 				'translate(' + _widthHalf + 'px,' + _heightHalf + 'px)' +
-				cameraCSSMatrix +
+				enableViewport + cameraCSSMatrix +
 				matrix3d;
 
 		}
 
-		return 'translate(-50%,-50%)' + matrix3d;
+		return 'translate(-50%,-50%)' + enableViewport + matrix3d;
 
 	}
 

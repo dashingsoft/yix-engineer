@@ -4,13 +4,12 @@
 
 <script>
 import * as THREE from 'three'
-import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
+import { CSS3DRenderer, CSS3DObject } from './CSS3DRenderer.js'
 import { MapControls as Controls } from 'three/examples/jsm/controls/OrbitControls.js'
 // import { Controls } from './Controls.js'
 
-let blankscene, blankcamera
+let idlescene, idlecamera, idlecontrol
 let renderer1, renderer2
-let controls
 
 export default {
     name: 'Imager',
@@ -32,9 +31,6 @@ export default {
 
             width: 800,
             height: 600,
-
-            viewports: [],
-            currentViewport: null,
         }
     },
     mounted() {
@@ -52,10 +48,10 @@ export default {
         this.relscene = new THREE.Scene()
         this.relscene.background = new THREE.Color( 0xf0f0f0 )
 
-        blankcamera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
-        blankcamera.position.set( 200, 200, 200 )
-        
-        blankscene = new THREE.Scene()
+        idlecamera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
+        idlecamera.position.set( 200, 200, 200 )
+
+        idlescene = new THREE.Scene()
         this.reset()
 
         // const axesHelper = new THREE.AxesHelper( 200 );
@@ -75,13 +71,13 @@ export default {
         renderer2.domElement.style.top = 0;
         this.$el.appendChild( renderer2.domElement );
 
-        controls = new Controls( blankcamera, this.$el );
-        controls.enableDamping = true;
-	controls.dampingFactor = 0.05;
-	controls.screenSpacePanning = false;
-	controls.minDistance = 100;
-	controls.maxDistance = 1000;
-	controls.maxPolarAngle = Math.PI / 2;
+        idlecontrol = new Controls( idlecamera, this.$el );
+        idlecontrol.enableDamping = true;
+        idlecontrol.dampingFactor = 0.05;
+        idlecontrol.screenSpacePanning = false;
+        idlecontrol.minDistance = 100;
+        idlecontrol.maxDistance = 1000;
+        idlecontrol.maxPolarAngle = Math.PI / 2;
 
         this.$on( 'watch', this.onEventWatch )
 
@@ -102,27 +98,27 @@ export default {
         animate () {
             requestAnimationFrame( this.animate )
 
-            controls.update()
             renderer1.render( this.relscene, this.relcamera )
 
-            if ( this.currentViewport === null ) {
-                renderer2.render( blankscene, blankcamera )
+            for ( let i = 0; i < this.scenes.length; i ++ ) {
+                let scene = this.scenes[ i ]
+                let v = scene.userData.viewport
+                v === null
+                    ? renderer2.resetViewport()
+                    : renderer2.setViewport( v.left, v.top, v.width, v.height )
+
+                let camera = scene.userData.camera
+                let control = scene.userData.control
+                control.update()
+                renderer2.render( scene, camera )
             }
-            else {
-                for ( let viewport in this.currentViewport ) {
-                    let left = viewport.rect.left
-                    let bottom = viewport.rect.bottom
-                    let width = viewport.rect.width
-                    let height = viewport.rect.height
-                    // renderer2.setViewport( left, bottom, width, height )
-                    for ( let scene in viewport.scenes ) {
-                        let camera = scene.userData.camera
-                        let control = scene.userData.control
-                        control.update()
-                        renderer2.render( scene, camera )
-                    }
-                }
+
+            if ( ! this.scenes.length ) {
+                idlecontrol.update()
+                renderer2.resetViewport()
+                renderer2.render( idlescene, idlecamera )
             }
+
         },
 
         reset () {
@@ -132,8 +128,8 @@ export default {
                 wireframeLinewidth: 1,
                 side: THREE.DoubleSide
             } )
-            
-            blankscene.remove.apply( blankscene, blankscene.children )
+
+            idlescene.remove.apply( idlescene, idlescene.children )
             for ( let i = 0; i < 10; i ++ ) {
                 const element = document.createElement( 'div' )
                 element.style.width = '100px'
@@ -150,7 +146,7 @@ export default {
                 object.rotation.z = Math.random()
                 object.scale.x = Math.random() + 0.5
                 object.scale.y = Math.random() + 0.5
-                blankscene.add( object )
+                idlescene.add( object )
 
                 const geometry = new THREE.PlaneBufferGeometry( 100, 100 )
                 const mesh = new THREE.Mesh( geometry, material )
@@ -161,14 +157,39 @@ export default {
             }
         },
 
-        onEventWatch ( view ) {
-            let obj = new CSS3DObject( view )
+        onEventWatch ( obj ) {
+            let v = new CSS3DObject( obj.$el )
             let camera = new THREE.PerspectiveCamera( 45, this.width / this.height, 1, 1000 )
             let scene = new THREE.Scene()
-            scene.userData.camera = camera
-            scene.add( obj )
+            let control = new Controls( camera, this.$el )
+
+            scene.add( v )
             scene.background = new THREE.Color( 0xf0f0f0 )
-            camera.position.set( 0, 0, 800 )
+
+            let w = this.width / 2
+            let h = this.height
+            let margin = 10
+            let d = Math.max( obj.width / ( w / 2 - margin ) * this.width / 2,
+                              obj.height / ( h / 2 - margin ) * this.height / 2 )
+            camera.position.set( 0, 0, d )
+
+            control.enableDamping = true;
+            control.dampingFactor = 0.05;
+            control.screenSpacePanning = false;
+            control.minDistance = 100;
+            control.maxDistance = 1000;
+            control.maxPolarAngle = Math.PI / 2;
+
+            scene.userData.camera = camera
+            scene.userData.control = control
+            scene.userData.viewport = {
+                left: 0,
+                top: 0,
+                width: this.width / 2,
+                height: this.height
+            }
+
+            this.scenes.push( scene )
         },
 
         onEventMap ( relations ) {
