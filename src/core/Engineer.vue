@@ -1,6 +1,6 @@
 <template>
-  <div class="yix-engineer">
-    <div class="cover" v-show="state == 'init'">
+  <div class="y-engineer">
+    <div class="cover" v-show="state === 'init'">
       <el-card class="box-card">
         <div slot="header">
           <span>{{ title }}</span>
@@ -30,36 +30,41 @@
         @click="run"
         round>{{ state === 'init' ? '开始' : '返回' }}</el-button>
     </div>
-    <div class="actionbar" v-show="state !== 'init'">
+    <div class="actionbar" v-show="actionbarVisible">
       <el-button-group>
-        <el-button type="mini" title="开始和继续"><img src="../assets/play.svg"/></el-button>
-        <el-button type="mini" title="暂停"><img src="../assets/pause.svg"/></el-button>
-        <el-button type="mini" title="终止"><img src="../assets/stop.svg"/></el-button>
+        <el-button title="开始和继续"><img src="../assets/play.svg"/></el-button>
+        <el-button title="暂停"><img src="../assets/pause.svg"/></el-button>
+        <el-button title="终止"><img src="../assets/stop.svg"/></el-button>
       </el-button-group>
       <el-button-group>
-        <el-button type="mini" title="返回到上一级"><img src="../assets/skip-start.svg"/></el-button>
-        <el-button type="mini" title="跳过当前过程"><img src="../assets/skip-end.svg"/></el-button>
+        <el-button title="返回到上一级"><img src="../assets/skip-start.svg"/></el-button>
+        <el-button title="跳过当前过程"><img src="../assets/skip-end.svg"/></el-button>
       </el-button-group>
       <el-button-group>
-        <el-button type="mini" title="结构图"><img src="../assets/search.svg"/></el-button>
-        <el-button type="mini" title="放大"><img src="../assets/zoom-in.svg"/></el-button>
-        <el-button type="mini" title="缩小"><img src="../assets/zoom-out.svg"/></el-button>
-        <el-button type="mini" title="缩略图"><img src="../assets/pip.svg"/></el-button>
+        <el-button title="明细图"><img src="../assets/search.svg"/></el-button>
+        <el-button title="放大"><img src="../assets/zoom-in.svg"/></el-button>
+        <el-button title="缩小"><img src="../assets/zoom-out.svg"/></el-button>
       </el-button-group>
       <el-button-group>
-        <el-button type="mini" title="垂直分割视图">
-          <img src="../assets/layout-split.svg"/>
-        </el-button>
-        <el-button type="mini" title="水平分割视图">
-          <img src="../assets/layout-split.svg" style="rotate: 90deg;"/>
+        <el-button title="缩略图"><img src="../assets/pip.svg"/></el-button>
+        <el-button title="显示布局窗口" @click="layoutbarVisible = true">
+          <img src="../assets/view-list.svg"/>
         </el-button>
       </el-button-group>
-      <el-button-group>
-        <el-button type="mini" title="主视图开关"><img src="../assets/grid-1x2.svg"/></el-button>
-        <el-button type="mini" title="层叠视图"><img src="../assets/view-list.svg"/></el-button>
-        <el-button type="mini" title="单排视图"><img src="../assets/view-stack.svg"/></el-button>
-        <el-button type="mini" title="多排视图"><img src="../assets/grid.svg"/></el-button>
-      </el-button-group>
+    </div>
+    <div class="layoutbar" v-show="layoutbarVisible" @click="layoutbarVisible = false">
+      <div v-for="(item, index) in viewports" :key="index"
+        v-bind:style="{ backgroundImage: item.image }">
+        <el-button type="text" title="关闭"><i class="el-icon-close"/></el-button>
+      </div>
+      <div>
+        <div class="toolbox">
+          <el-button type="info" title="简单视图"><img src="../assets/square.svg"/></el-button>
+          <el-button type="info" title="主从视图"><img src="../assets/grid-1x2.svg"/></el-button>
+          <el-button type="info" title="表格视图"><img src="../assets/grid.svg"/></el-button>
+        </div>
+        <div><i class="el-icon-plus"></i></div>
+      </div>
     </div>
     <Imager ref="imager"></Imager>
   </div>
@@ -67,7 +72,6 @@
 
 <script>
 import Imager from './Imager.vue'
-import ActionStack from './Action.js'
 
 export default {
     name: 'Engineer',
@@ -95,6 +99,9 @@ export default {
             // 是否全屏模式
             fullScreen: false,
 
+            actionbarVisible: false,
+            layoutbarVisible: false,
+
             // 时间单位，单步时长，默认 2000 毫秒
             timeUnit: 2000,
             // 时间计数器
@@ -103,7 +110,7 @@ export default {
             // 操作列表
             actionstack: [],
             // 映射列表
-            mapstack: new ActionStack(),
+            mapstack: [],
 
             speed: 1,
             speedMax: 10,
@@ -112,6 +119,11 @@ export default {
             // 运行粒度，
             runLevel: 1,
             intervalId: null,
+
+            // 视窗
+            viewports: [
+                { image: "" },
+            ],
 
         }
     },
@@ -136,8 +148,9 @@ export default {
 
         run () {
             this.state = 'run'
+            this.actionbarVisible = true
             this.mainDomain.run()
-            this.$refs.imager.$emit( 'view', this.mainDomain.$el )
+            this.$refs.imager.$emit( 'watch', this.mainDomain.$el )
         },
 
         onWindowResize() {
@@ -229,11 +242,11 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
 
-.yix-engineer {
+.y-engineer {
     position: relative;
 }
 
-.yix-engineer .cover {
+.y-engineer .cover {
     position: absolute;
     left: 0;
     top: 0;
@@ -249,59 +262,19 @@ export default {
     justify-content: center;
 }
 
-.yix-engineer .cover .box-card {
+.y-engineer .cover .box-card {
     width: 400px;
     border-radius: 16px;
 }
 
-.yix-engineer .cover .el-rate {
+.y-engineer .cover .el-rate {
     padding-top: 8px;
 }
 
-.yix-engineer .cover .el-button {
+.y-engineer .cover .el-button {
     width: 80%;
     max-width: 180px;
     margin-top: 30px
-}
-
-.yix-view {
-    border: 1px #DCDFE6 solid;
-}
-
-.yix-titlebar {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 0 0 0 6px;
-    border-bottom: 1px #E4E7ED solid;
-}
-
-.yix-titlebar > * {
-    padding-right: 6px;
-    flex-grow: 0;
-}
-
-.yix-titlebar > span {
-    padding: 6px;
-}
-
-.yix-titlebar > *:first-child {
-    padding: 2px;
-}
-
-.yix-titlebar > *:last-child {
-    padding-right: 0;
-    flex-grow: 1;
-    text-align: right;
-}
-
-.yix-titlebar button {
-    border: 0;
-    background: #F0F0F0;
-}
-
-.yix-titlebar > .actiongroup > .el-button {
-    margin-left: 0;
 }
 
 .actionbar {
@@ -330,11 +303,72 @@ export default {
     background: #F0F0F0;
 }
 
-.yix-view-body {
+.y-engineer .layoutbar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    z-index: 2;
+
+    display: flex;
+    justify-content: center;
+    align-items: strech;
+
+    padding: 16px;
+    background: #909399;
 }
 
-.invisible-view > i {
-    color: lightgray;
+.y-engineer .layoutbar > div {
+    position: relative;
+    width: 160px;
+    margin-right: 32px;
+    text-align: center;
+    border: 1px #DCDFE6 solid;
+    background-size: cover;
+    background-image: linear-gradient(to bottom, rgba(240,240,220,0.5), rgba(150,152,162,0.8))
+}
+
+.y-engineer .layoutbar .toolbox {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    opacity: 0;
+}
+
+.y-engineer .layoutbar .toolbox:hover {
+    opacity: 1;
+}
+
+.y-engineer .layoutbar button {
+    border: 0;
+    padding: 9px 16px;
+}
+
+.y-engineer .layoutbar img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.y-engineer .layoutbar .el-button img {
+    width: 1em;
+    height: 1em;
+}
+
+.y-engineer .layoutbar .el-icon-plus {
+    padding: 32px;
+    font-size: 2em;
+    color: rgba(48, 48, 48, .3);
+}
+
+.y-engineer .layoutbar .el-button.el-button--text {
+    float: right;
 }
 
 </style>
