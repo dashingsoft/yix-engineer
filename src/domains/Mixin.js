@@ -19,14 +19,12 @@ var MixinDomain = {
                 }
                 else {
                     // result instanceof Tween
+                    action.tween = result
                     result.onStop = () => {
                         action.notify( 'stop' )
                     }
                     result.onComplete = () => {
                         action.nofify( 'done' )
-                    }
-                    action.request = () => {
-                        result.stop()
                     }
                 }
             }

@@ -15,7 +15,7 @@ var Action = function ( target, name, args, options ) {
     this.sequence = 0;
 
     this.state = STATE.NEW;
-    this.request = null;
+    this.tween = null;
 
     // internals
 
@@ -32,6 +32,11 @@ var Action = function ( target, name, args, options ) {
         else
             throw new Error( 'Unknown action state "' + event + '"' );
 
+    };
+
+    this.cancel = function () {
+        if ( scope.state === STATE.RUNNING && scope.tween !== null )
+            scope.tween.stop()
     };
 
     this.isPending = function () {
@@ -51,10 +56,4 @@ var Action = function ( target, name, args, options ) {
 Action.prototype = Object.create( {} )
 Action.prototype.constructor = Action;
 
-var ActionStack = function () {
-};
-
-ActionStack.prototype = Object.create( Array.prototype )
-ActionStack.prototype.constructor = ActionStack;
-
-export { Action, ActionStack };
+export { Action };
