@@ -4,7 +4,8 @@
 
 <script>
 import * as THREE from 'three'
-import { CSS3DRenderer, CSS3DObject } from './CSS3DRenderer.js'
+import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
+import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
 import { MapControls as Controls } from 'three/examples/jsm/controls/OrbitControls.js'
 // import { Controls } from './Controls.js'
 
@@ -12,13 +13,15 @@ let idlescene, idlecamera, idlecontrol
 let renderer1, renderer2
 
 export default {
-    name: 'Imager',
+    name: 'CoreImager',
+
     props: {
-        target: Object
     },
+
     data() {
         return {
             scenes: [],
+            viewports: [],
 
             relscene: null,
             relcamera: null,
@@ -33,6 +36,25 @@ export default {
             height: 600,
         }
     },
+
+    computed: {
+        currentViewport () {
+            for ( let i = 0; i < this.viewports.length; i ++ )
+                if ( ! this.viewports[ i ].inactive )
+                    return this.viewports[ i ]
+
+            const element = document.createElement( 'div' )
+            let viewport = {
+                inactive: false,
+                element: element,
+                scenes: []
+            }
+            this.$el.appendChild( element )
+            this.viewports.push.call( this.viewports, viewport )
+            return viewport
+        }
+    },
+
     mounted() {
 
         let rect = this.$el.getBoundingClientRect()
@@ -80,6 +102,7 @@ export default {
         idlecontrol.maxPolarAngle = Math.PI / 2;
 
         this.$on( 'watch', this.onEventWatch )
+        this.$on( 'busy', this.onEventBusy )
 
         this.animate()
     },
@@ -97,26 +120,32 @@ export default {
 
         animate () {
             requestAnimationFrame( this.animate )
+            TWEEN.update()
+            this.render()
+        },
 
-            renderer1.render( this.relscene, this.relcamera )
+        render () {
 
-            for ( let i = 0; i < this.scenes.length; i ++ ) {
-                let scene = this.scenes[ i ]
-                let v = scene.userData.viewport
-                v === null
-                    ? renderer2.resetViewport()
-                    : renderer2.setViewport( v.left, v.top, v.width, v.height )
+            if ( this.relscene.visible )
+                renderer1.render( this.relscene, this.relcamera )
 
-                let camera = scene.userData.camera
-                let control = scene.userData.control
-                control.update()
-                renderer2.render( scene, camera )
+            if ( idlescene.visible ) {
+                idlecontrol.update()
+                renderer2.render( idlescene, idlecamera )
             }
 
-            if ( ! this.scenes.length ) {
-                idlecontrol.update()
-                renderer2.resetViewport()
-                renderer2.render( idlescene, idlecamera )
+            for ( let i = 0; i < this.viewports.length; i ++ ) {
+
+                let viewport = this.viewports[ i ]
+                if ( viewport.inactive )
+                    continue
+
+                for ( let j = 0; j < viewport.scenes.length; j ++ ) {
+                    let scene = viewport.scenes[ j ]
+                    scene.userData.control.update()
+                    scene.userData.renderer.render( scene, scene.userData.camera )
+                }
+
             }
 
         },
@@ -161,18 +190,30 @@ export default {
             let v = new CSS3DObject( obj.$el )
             let camera = new THREE.PerspectiveCamera( 45, this.width / this.height, 1, 1000 )
             let scene = new THREE.Scene()
-            let control = new Controls( camera, this.$el )
 
             scene.add( v )
             scene.background = new THREE.Color( 0xf0f0f0 )
 
-            let w = this.width / 2
-            let h = this.height
+            let rect = {
+                left: 0,
+                top: 0,
+                width: this.width,
+                height: this.height
+            }
             let margin = 10
-            let d = Math.max( obj.width / ( w / 2 - margin ) * this.width / 2,
-                              obj.height / ( h / 2 - margin ) * this.height / 2 )
+            let d = Math.max( obj.width / ( rect.width / 2 - margin ) * this.width / 2,
+                              obj.height / ( rect.height / 2 - margin ) * this.height / 2 )
             camera.position.set( 0, 0, d )
 
+            let viewport = this.currentViewport
+            let renderer = new CSS3DRenderer();
+            renderer.setSize( rect.width, rect.height )
+            renderer.domElement.style.position = 'absolute'
+            renderer.domElement.style.left = rect.left + 'px'
+            renderer.domElement.style.top = rect.top + 'px'
+            viewport.element.appendChild( renderer.domElement )
+
+            let control = new Controls( camera, renderer.domElement )
             control.enableDamping = true;
             control.dampingFactor = 0.05;
             control.screenSpacePanning = false;
@@ -182,25 +223,24 @@ export default {
 
             scene.userData.camera = camera
             scene.userData.control = control
-            scene.userData.viewport = {
-                left: 0,
-                top: 0,
-                width: this.width / 2,
-                height: this.height
-            }
+            scene.userData.renderer = renderer
 
-            this.scenes.push( scene )
+            viewport.scenes.push( scene )
         },
 
         onEventMap ( relations ) {
             this.relations = relations
         },
+
+        onEventBusy ( value ) {
+            idlescene.visible =  ! value
+            renderer2.domElement.style.display = value ? 'none' : ''
+        },
     }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style>
 .y-imager {
     position: relative;
 }

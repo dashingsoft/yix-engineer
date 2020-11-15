@@ -7,7 +7,9 @@
 <script>
 import Vue from "vue"
 import Engineer from './core/Engineer.vue'
-import Machine from './domains/computer/Machine.vue'
+import RealComputer from './domains/real/Computer.vue'
+// import RealComputer from './domains/computer/Machine.vue'
+
 
 export default {
     name: 'App',
@@ -15,8 +17,8 @@ export default {
         Engineer
     },
     created() {
-        let PlainComputer = Vue.extend( Machine )
-        this.mainDomain = new PlainComputer()
+        const ComputerType = Vue.extend( RealComputer )
+        this.mainDomain = new ComputerType()
         this.mainDomain.$mount()
     },
     data() {

@@ -41,21 +41,21 @@
         <el-button title="跳过当前过程"><img src="../assets/skip-end.svg"/></el-button>
       </el-button-group>
       <el-button-group>
-        <el-button title="明细图"><img src="../assets/search.svg"/></el-button>
-        <el-button title="放大"><img src="../assets/zoom-in.svg"/></el-button>
-        <el-button title="缩小"><img src="../assets/zoom-out.svg"/></el-button>
-      </el-button-group>
-      <el-button-group>
+        <el-button title="关联窗口模式"><img src="../assets/layers.svg"/></el-button>
         <el-button title="缩略图"><img src="../assets/pip.svg"/></el-button>
         <el-button title="显示布局窗口" @click="layoutbarVisible = true">
           <img src="../assets/view-list.svg"/>
         </el-button>
       </el-button-group>
+      <el-button-group>
+        <el-button title="后台运行"><img src="../assets/cursor.svg"/></el-button>
+        <el-button title="全屏模式"><img src="../assets/fullscreen.svg"/></el-button>
+      </el-button-group>
     </div>
     <div class="layoutbar" v-show="layoutbarVisible" @click="layoutbarVisible = false">
       <div v-for="(item, index) in viewports" :key="index"
         v-bind:style="{ backgroundImage: item.image }">
-        <el-button type="text" title="关闭"><i class="el-icon-close"/></el-button>
+        <el-button type="text" title="关闭" icon="el-icon-close"></el-button>
       </div>
       <div>
         <div class="toolbox">
@@ -66,19 +66,16 @@
         <div><i class="el-icon-plus"></i></div>
       </div>
     </div>
-    <Imager ref="imager"></Imager>
+    <div class="y-container"></div>
   </div>
 </template>
 
 <script>
-import Imager from './Imager.vue'
+import Vue from "vue"
+import CoreImager from './Imager.vue'
 
 export default {
     name: 'Engineer',
-
-    components: {
-        Imager
-    },
 
     props: {
         title: String,
@@ -87,6 +84,8 @@ export default {
 
     data() {
         return {
+            imager: null,
+
             // 运行状态:
             //     init, 初始化
             //     run, 正在运行
@@ -132,7 +131,12 @@ export default {
         let rect = this.$el.getBoundingClientRect()
         let width = window.innerWidth - rect.left
         let height = window.innerHeight - rect.top
-        this.$refs.imager.resize( width, height )
+
+        const Imager = Vue.extend( CoreImager )
+        this.imager = new Imager( {
+            el: this.$el.querySelector( '.y-container' )
+        } )
+        this.imager.resize( width, height )
 
         this.$on( 'pause', this.onEventPause )
         this.$on( 'enter', this.onEventEnter )
@@ -150,15 +154,16 @@ export default {
             this.state = 'run'
             this.actionbarVisible = true
             this.mainDomain.run()
-            this.$refs.imager.$emit( 'watch', this.mainDomain )
+            this.imager.$emit( 'watch', this.mainDomain )
+            this.imager.$emit( 'busy', true )
         },
 
         onWindowResize() {
             let rect = this.$el.getBoundingClientRect()
             let width = window.innerWidth - rect.left
             let height = window.innerHeight - rect.top
-            if ( this.$refs.imager )
-                this.$refs.imager.resize( width, height )
+            if ( this.imager )
+                this.imager.resize( width, height )
         },
 
         onKeyup ( e ) {
@@ -254,7 +259,7 @@ export default {
     bottom: 0;
 
     background-color: rgba(240, 240, 240, .86);
-    z-index: 10;
+    z-index: 100;
 
     display: flex;
     flex-direction: column;
@@ -277,28 +282,28 @@ export default {
     margin-top: 30px
 }
 
-.actionbar {
+.y-engineer .actionbar {
     position: absolute;
     top: 6px;
     left: 0;
     right: 0;
-    z-index: 1;
+    z-index: 10;
 
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.actionbar > * {
+.y-engineer .actionbar > * {
     margin-right: 9px;
 }
 
-.actionbar img {
+.y-engineer .actionbar img {
     width: 1em;
     height: 1em;
 }
 
-.actionbar button {
+.y-engineer .actionbar button {
     border: 0;
     background: #F0F0F0;
 }
@@ -308,7 +313,7 @@ export default {
     left: 0;
     top: 0;
     right: 0;
-    z-index: 2;
+    z-index: 20;
 
     display: flex;
     justify-content: center;
