@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="cover">
+    <div class="y-cover">
       <el-card class="box-card">
         <div slot="header">
           <span>{{ title }}</span>
@@ -55,7 +55,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.cover {
+.y-cover {
     position: absolute;
     left: 0;
     top: 0;
@@ -71,16 +71,16 @@ export default {
     justify-content: center;
 }
 
-.cover .box-card {
+.y-cover .box-card {
     width: 400px;
     border-radius: 16px;
 }
 
-.cover .el-rate {
+.y-cover .el-rate {
     padding-top: 8px;
 }
 
-.cover .el-button {
+.y-cover .el-button {
     width: 80%;
     max-width: 180px;
     margin-top: 30px

@@ -1,5 +1,5 @@
 <template>
-  <div class="layoutbox"
+  <div class="y-layoutbox"
        v-bind:style="{ display: isVisible ? 'flex' : 'none' }"
        @click="visible = false">
     <div v-for="(item, index) in viewsets" :key="index"
@@ -7,7 +7,7 @@
       <el-button type="text" title="关闭" icon="el-icon-close"></el-button>
     </div>
     <div>
-      <div class="toolbox">
+      <div class="y-toolbox">
         <el-button type="info" title="简单视图"><img src="../assets/square.svg"/></el-button>
         <el-button type="info" title="主从视图"><img src="../assets/grid-1x2.svg"/></el-button>
         <el-button type="info" title="表格视图"><img src="../assets/grid.svg"/></el-button>
@@ -43,7 +43,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.layoutbox {
+.y-layoutbox {
     position: absolute;
     left: 0;
     top: 0;
@@ -58,7 +58,7 @@ export default {
     background: #909399;
 }
 
-.layoutbox > div {
+.y-layoutbox > div {
     position: relative;
     width: 160px;
     margin-right: 32px;
@@ -68,10 +68,10 @@ export default {
     background-image: linear-gradient(to bottom, rgba(240,240,220,0.5), rgba(150,152,162,0.8))
 }
 
-.layoutbox .toolbox {
+.y-layoutbox .y-toolbox {
     position: absolute;
-    left: 0;
-    right: 0;
+    left: 10px;
+    right: 10px;
     top: 0;
     bottom: 0;
 
@@ -82,32 +82,32 @@ export default {
     opacity: 0;
 }
 
-.layoutbox .toolbox:hover {
+.y-layoutbox .y-toolbox:hover {
     opacity: 1;
 }
 
-.layoutbox button {
+.y-layoutbox button {
     border: 0;
     padding: 9px 16px;
 }
 
-.layoutbox img {
+.y-layoutbox img {
     max-width: 100%;
     max-height: 100%;
 }
 
-.layoutbox .el-button img {
+.y-layoutbox .el-button img {
     width: 1em;
     height: 1em;
 }
 
-.layoutbox .el-icon-plus {
+.y-layoutbox .el-icon-plus {
     padding: 32px;
     font-size: 2em;
     color: rgba(48, 48, 48, .3);
 }
 
-.layoutbox .el-button.el-button--text {
+.y-layoutbox .el-button.el-button--text {
     float: right;
 }
 

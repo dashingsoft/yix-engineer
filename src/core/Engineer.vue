@@ -76,7 +76,7 @@ export default {
             imager: null,
 
             // 当前模式
-            mode: MODE.Setting,
+            mode: MODE.Idle,
 
             // 运行状态
             state: STATE.New,
@@ -137,13 +137,53 @@ export default {
 
         run () {
             this.state = STATE.Running
-            this.mainDomain.run()
+            this.mode = MODE.Living
+
             this.imager.$emit( 'watch', this.mainDomain )
             this.imager.$emit( 'busy', true )
+            // watch mainDomain
+            // mainDomain.run
+            this.mainDomain.start()
+            this.intervalId = window.setInterval( this.normalize, this.timeUnit )
         },
 
         showLayout () {
             this.$refs.layout.visible = true
+        },
+
+        start () {
+            this.run()
+        },
+
+        stop () {
+            window.clearInterval( this.intervalId )
+        },
+
+        normalize () {
+            if ( this.state !== STATE.Runing )
+                return;
+
+            this.timeCounter ++;
+
+            this.mainDomain.normalize()
+
+            while ( this.actionStack.length ) {
+                let action = this.actionStack.pop()
+                if ( action.isFinished() ) {
+                    if ( action.successor ) {
+                        let prev = this.actionStack.pop()
+                        prev.state = action.state
+                        this.actionStack.push( prev )
+                    }
+                }
+                else if ( action.isPending() ) {
+                    action.notify( 'run' )
+                    action.target.$emit( 'talk', action )
+                }
+                else if ( action.isRunning() )
+                    this.actionStack.push( action )
+            }
+
         },
 
         onWindowResize() {
@@ -183,43 +223,6 @@ export default {
         onEventLeave ( shift ) {
             this.$message( 'leave event with shift ' + shift )
         },
-
-        start () {
-            // watch mainDomain
-            // mainDomain.run
-            this.intervalId = window.setInterval( this.normalize, this.timeUnit )
-        },
-
-        stop () {
-            window.clearInterval( this.intervalId )
-        },
-
-        normalize () {
-            if ( this.state !== STATE.Runing )
-                return;
-
-            this.timeCounter ++;
-
-            this.mainDomain.normalize()
-
-            while ( this.actionStack.length ) {
-                let action = this.actionStack.pop()
-                if ( action.isFinished() ) {
-                    if ( action.successor ) {
-                        let prev = this.actionStack.pop()
-                        prev.state = action.state
-                        this.actionStack.push( prev )
-                    }
-                }
-                else if ( action.isPending() ) {
-                    action.notify( 'run' )
-                    action.target.$emit( 'talk', action )
-                }
-                else if ( action.isRunning() )
-                    this.actionStack.push( action )
-            }
-
-        }
 
     }
 }

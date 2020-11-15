@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="controlbox">
+    <div class="y-controlbox">
       <el-button-group>
         <el-button title="开始和继续"><img src="../assets/play.svg"/></el-button>
         <el-button title="暂停"><img src="../assets/pause.svg"/></el-button>
@@ -28,14 +28,14 @@
 <script>
 
 export default {
-    name: 'ControlBox',
+    name: 'Controlbox',
 }
 
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.controlbox {
+.y-controlbox {
     position: absolute;
     top: 6px;
     left: 0;
@@ -47,16 +47,16 @@ export default {
     align-items: center;
 }
 
-.controlbox > * {
+.y-controlbox > * {
     margin-right: 9px;
 }
 
-.controlbox img {
+.y-controlbox img {
     width: 1em;
     height: 1em;
 }
 
-.controlbox button {
+.y-controlbox button {
     border: 0;
     background: #F0F0F0;
 }
