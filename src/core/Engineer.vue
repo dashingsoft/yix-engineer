@@ -5,11 +5,12 @@
       :options="runOptions"
       v-show="isReady"></StartPage>
     <ControlBox
-      v-show="isRunning"></ControlBox>
+      v-show="isLiving"></ControlBox>
     <LayoutBox
-      :viewports="viewports"></LayoutBox>
+      ref="layout"
+      :viewsets="viewsets"></LayoutBox>
     <CoreImager
-      :viewports="viewports"
+      :viewsets="viewsets"
       ref="imager"></CoreImager>
   </div>
 </template>
@@ -23,14 +24,14 @@ import LayoutBox from './Layout.vue'
 import CoreImager from './Imager.vue'
 
 
-// 运行状态:
-//     init, 初始化
-//     running, 正在运行
-//     pause, 暂停运行状态
-//     finish, 正常结束
-//     abort, 未知的异常结束
-//     halt, 系统停止运行
-const RUNSTATE = {
+const MODE = {
+    Idle: -1,
+    Setting: 0,
+    Living: 1,
+    Learning: 2,
+}
+
+const STATE = {
     Unknown: -1,
     New: 0,
     Ready: 1,
@@ -60,20 +61,37 @@ export default {
     computed: {
 
         isReady () {
-            return this.runState === RUNSTATE.Ready
+            return this.state === STATE.Ready
         },
 
-        isRunning () {
-            return this.runState === RUNSTATE.Running
+        isLiving () {
+            return this.mode === MODE.Living &&
+                [ STATE.Running, STATE.Paused ].indexOf( this.state ) !== -1
         },
 
-    }
+    },
 
     data() {
         return {
             imager: null,
 
-            runState: RUNSTATE.New,
+            // 当前模式
+            mode: MODE.Setting,
+
+            // 运行状态
+            state: STATE.New,
+
+            // 操作列表
+            actionStack: [],
+
+            // 映射列表
+            mapStack: [],
+
+            // 学习步骤，每一层堆栈包括：mode, state, actionStack
+            frameStack: [],
+
+            // 视图，每一个视图都是一个或者多个视图的集合
+            viewsets: [],
 
             runOptions: {
                 fullScreen: false,
@@ -91,15 +109,6 @@ export default {
 
             // 定时器 Id
             intervalId: null,
-
-            // 操作列表
-            actionStack: [],
-
-            // 映射列表
-            mapStack: [],
-
-            // 视窗
-            viewports: [],
 
         }
     },
@@ -121,19 +130,20 @@ export default {
             this.onKeyup( e )
         } )
 
-        this.runState = RUNSTATE.READY
+        this.state = STATE.Ready
     },
 
     methods: {
 
         run () {
-            this.runState = 1
+            this.state = STATE.Running
             this.mainDomain.run()
             this.imager.$emit( 'watch', this.mainDomain )
             this.imager.$emit( 'busy', true )
         },
 
         showLayout () {
+            this.$refs.layout.visible = true
         },
 
         onWindowResize() {
@@ -162,14 +172,6 @@ export default {
             }
         },
 
-        setViewport () {
-        },
-
-        setRunLevel ( value ) {
-            // Enter 进入更新粒度，Shfit + Enter 进入更大粒度
-            this.runLevel = value
-        },
-
         onEventPause () {
             this.$message( 'pause event' )
         },
@@ -193,10 +195,12 @@ export default {
         },
 
         normalize () {
+            if ( this.state !== STATE.Runing )
+                return;
+
             this.timeCounter ++;
 
-            for ( let i = 0; i < this.mapStack.length; i ++ )
-                this.mapStack[ i ].normalize()
+            this.mainDomain.normalize()
 
             while ( this.actionStack.length ) {
                 let action = this.actionStack.pop()

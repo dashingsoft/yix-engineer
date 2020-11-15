@@ -16,7 +16,7 @@ export default {
     name: 'CoreImager',
 
     props: {
-        viewports: Array,
+        viewsets: Array,
     },
 
     data() {
@@ -38,21 +38,22 @@ export default {
     },
 
     computed: {
-        currentViewport () {
-            for ( let i = 0; i < this.viewports.length; i ++ )
-                if ( ! this.viewports[ i ].inactive )
-                    return this.viewports[ i ]
+        currentViewset () {
+            let viewsets = this.viewsets
+            for ( let i = 0; i < viewsets.length; i ++ )
+                if ( ! viewsets[ i ].inactive )
+                    return viewsets[ i ]
 
             const element = document.createElement( 'div' )
-            let viewport = {
+            let viewset = {
                 inactive: false,
                 element: element,
                 image: '',
                 scenes: []
             }
             this.$el.appendChild( element )
-            this.viewports.push.call( this.viewports, viewport )
-            return viewport
+            viewsets.push.call( viewsets, viewset )
+            return viewset
         }
     },
 
@@ -135,18 +136,10 @@ export default {
                 renderer2.render( idlescene, idlecamera )
             }
 
-            for ( let i = 0; i < this.viewports.length; i ++ ) {
-
-                let viewport = this.viewports[ i ]
-                if ( viewport.inactive )
-                    continue
-
-                for ( let j = 0; j < viewport.scenes.length; j ++ ) {
-                    let scene = viewport.scenes[ j ]
-                    scene.userData.control.update()
-                    scene.userData.renderer.render( scene, scene.userData.camera )
-                }
-
+            for ( let j = 0; j < this.currentViewset.scenes.length; j ++ ) {
+                let scene = this.currentViewset.scenes[ j ]
+                scene.userData.control.update()
+                scene.userData.renderer.render( scene, scene.userData.camera )
             }
 
         },
@@ -206,13 +199,12 @@ export default {
                               obj.height / ( rect.height / 2 - margin ) * this.height / 2 )
             camera.position.set( 0, 0, d )
 
-            let viewport = this.currentViewport
             let renderer = new CSS3DRenderer();
             renderer.setSize( rect.width, rect.height )
             renderer.domElement.style.position = 'absolute'
             renderer.domElement.style.left = rect.left + 'px'
             renderer.domElement.style.top = rect.top + 'px'
-            viewport.element.appendChild( renderer.domElement )
+            this.currentViewset.element.appendChild( renderer.domElement )
 
             let control = new Controls( camera, renderer.domElement )
             control.enableDamping = true;
@@ -226,7 +218,7 @@ export default {
             scene.userData.control = control
             scene.userData.renderer = renderer
 
-            viewport.scenes.push( scene )
+            this.currentViewset.scenes.push( scene )
         },
 
         onEventMap ( relations ) {

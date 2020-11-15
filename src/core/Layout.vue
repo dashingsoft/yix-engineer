@@ -2,7 +2,7 @@
   <div class="layoutbox"
        v-bind:style="{ display: isVisible ? 'flex' : 'none' }"
        @click="visible = false">
-    <div v-for="(item, index) in viewports" :key="index"
+    <div v-for="(item, index) in viewsets" :key="index"
          v-bind:style="{ backgroundImage: item.image }">
       <el-button type="text" title="关闭" icon="el-icon-close"></el-button>
     </div>
@@ -23,7 +23,7 @@ export default {
     name: 'LayoutBox',
 
     props: {
-        viewports: Array
+        viewsets: Array
     },
 
     computed: {

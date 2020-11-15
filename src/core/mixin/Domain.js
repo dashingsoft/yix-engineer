@@ -79,4 +79,4 @@ var MixinDomain = {
 
 }
 
-export { MixinDomain as default, RunState }
+export { MixinDomain }
