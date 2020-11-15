@@ -16,12 +16,12 @@ export default {
     name: 'CoreImager',
 
     props: {
+        viewports: Array,
     },
 
     data() {
         return {
             scenes: [],
-            viewports: [],
 
             relscene: null,
             relcamera: null,
@@ -47,6 +47,7 @@ export default {
             let viewport = {
                 inactive: false,
                 element: element,
+                image: '',
                 scenes: []
             }
             this.$el.appendChild( element )

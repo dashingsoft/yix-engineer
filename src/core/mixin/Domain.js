@@ -33,7 +33,8 @@ var MixinDomain = {
 
     methods: {
 
-        _talk ( target, message, options ) {
+        talk ( target, message, options ) {
+            // target 也有可能需要在域空间内部进行查找
             target.$emit( 'talk', message, options )
         },
 
@@ -78,4 +79,4 @@ var MixinDomain = {
 
 }
 
-export { MixinDomain }
+export { MixinDomain as default, RunState }

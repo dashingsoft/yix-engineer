@@ -1,128 +1,105 @@
 <template>
   <div class="y-engineer">
-    <div class="cover" v-show="state === 'init'">
-      <el-card class="box-card">
-        <div slot="header">
-          <span>{{ title }}</span>
-        </div>
-        <el-form label-width="auto" size="medium">
-          <el-form-item label="全屏模式">
-            <el-switch v-model="fullScreen"></el-switch>
-          </el-form-item>
-          <el-form-item label="运行粒度">
-            <el-radio-group v-model="runLevel">
-              <el-radio :label="1">源代码</el-radio>
-              <el-radio :label="2">汇编指令</el-radio>
-              <el-radio :label="3">微处理器</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="运行速度">
-            <el-rate
-              :max="10"
-              :texts="speedLabels"
-              :show-text="true"
-              v-model="speed"></el-rate>
-          </el-form-item>
-        </el-form>
-      </el-card>
-      <el-button
-        type="success"
-        @click="run"
-        round>{{ state === 'init' ? '开始' : '返回' }}</el-button>
-    </div>
-    <div class="actionbar" v-show="actionbarVisible">
-      <el-button-group>
-        <el-button title="开始和继续"><img src="../assets/play.svg"/></el-button>
-        <el-button title="暂停"><img src="../assets/pause.svg"/></el-button>
-        <el-button title="终止"><img src="../assets/stop.svg"/></el-button>
-      </el-button-group>
-      <el-button-group>
-        <el-button title="返回到上一级"><img src="../assets/skip-start.svg"/></el-button>
-        <el-button title="跳过当前过程"><img src="../assets/skip-end.svg"/></el-button>
-      </el-button-group>
-      <el-button-group>
-        <el-button title="关联窗口模式"><img src="../assets/layers.svg"/></el-button>
-        <el-button title="缩略图"><img src="../assets/pip.svg"/></el-button>
-        <el-button title="显示布局窗口" @click="layoutbarVisible = true">
-          <img src="../assets/view-list.svg"/>
-        </el-button>
-      </el-button-group>
-      <el-button-group>
-        <el-button title="后台运行"><img src="../assets/cursor.svg"/></el-button>
-        <el-button title="全屏模式"><img src="../assets/fullscreen.svg"/></el-button>
-      </el-button-group>
-    </div>
-    <div class="layoutbar" v-show="layoutbarVisible" @click="layoutbarVisible = false">
-      <div v-for="(item, index) in viewports" :key="index"
-        v-bind:style="{ backgroundImage: item.image }">
-        <el-button type="text" title="关闭" icon="el-icon-close"></el-button>
-      </div>
-      <div>
-        <div class="toolbox">
-          <el-button type="info" title="简单视图"><img src="../assets/square.svg"/></el-button>
-          <el-button type="info" title="主从视图"><img src="../assets/grid-1x2.svg"/></el-button>
-          <el-button type="info" title="表格视图"><img src="../assets/grid.svg"/></el-button>
-        </div>
-        <div><i class="el-icon-plus"></i></div>
-      </div>
-    </div>
-    <div class="y-container"></div>
+    <StartPage
+      :title="title"
+      :options="runOptions"
+      v-show="isReady"></StartPage>
+    <ControlBox
+      v-show="isRunning"></ControlBox>
+    <LayoutBox
+      :viewports="viewports"></LayoutBox>
+    <CoreImager
+      :viewports="viewports"
+      ref="imager"></CoreImager>
   </div>
 </template>
 
 <script>
-import Vue from "vue"
+import MixinDomain from './mixin/Domain.js'
+
+import StartPage from './Start.vue'
+import ControlBox from './Control.vue'
+import LayoutBox from './Layout.vue'
 import CoreImager from './Imager.vue'
 
+
+// 运行状态:
+//     init, 初始化
+//     running, 正在运行
+//     pause, 暂停运行状态
+//     finish, 正常结束
+//     abort, 未知的异常结束
+//     halt, 系统停止运行
+const RUNSTATE = {
+    Unknown: -1,
+    New: 0,
+    Ready: 1,
+    Runing: 2,
+    Paused: 3,
+    Finshed: 4,
+    Aborted: 5
+}
+
+
 export default {
+    extends: MixinDomain,
     name: 'Engineer',
+
+    components: {
+        StartPage,
+        ControlBox,
+        LayoutBox,
+        CoreImager
+    },
 
     props: {
         title: String,
         mainDomain: Object
     },
 
+    computed: {
+
+        isReady () {
+            return this.runState === RUNSTATE.Ready
+        },
+
+        isRunning () {
+            return this.runState === RUNSTATE.Running
+        },
+
+    }
+
     data() {
         return {
             imager: null,
 
-            // 运行状态:
-            //     init, 初始化
-            //     run, 正在运行
-            //     pause, 暂停运行状态
-            //     finish, 正常结束
-            //     abort, 未知的异常结束
-            //     halt, 系统停止运行
-            state: 'init',
+            runState: RUNSTATE.New,
 
-            // 是否全屏模式
-            fullScreen: false,
-
-            actionbarVisible: false,
-            layoutbarVisible: false,
+            runOptions: {
+                fullScreen: false,
+                runSpeed: 1,
+                runLevel: 1,
+                animation: true,
+                elaboration: true,
+                precision: 0,
+            },
 
             // 时间单位，单步时长，默认 2000 毫秒
             timeUnit: 2000,
             // 时间计数器
             timeCounter: 0,
 
-            // 操作列表
-            actionstack: [],
-            // 映射列表
-            mapstack: [],
-
-            speed: 1,
-            speedMax: 10,
-            speedLabels: ['最慢', '慢', '慢', '较慢', '较慢', '较快', '较快', '快', '快', '最快'],
-
-            // 运行粒度，
-            runLevel: 1,
+            // 定时器 Id
             intervalId: null,
 
+            // 操作列表
+            actionStack: [],
+
+            // 映射列表
+            mapStack: [],
+
             // 视窗
-            viewports: [
-                { image: "" },
-            ],
+            viewports: [],
 
         }
     },
@@ -132,10 +109,7 @@ export default {
         let width = window.innerWidth - rect.left
         let height = window.innerHeight - rect.top
 
-        const Imager = Vue.extend( CoreImager )
-        this.imager = new Imager( {
-            el: this.$el.querySelector( '.y-container' )
-        } )
+        this.imager = this.$refs.imager
         this.imager.resize( width, height )
 
         this.$on( 'pause', this.onEventPause )
@@ -146,16 +120,20 @@ export default {
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
         } )
+
+        this.runState = RUNSTATE.READY
     },
 
     methods: {
 
         run () {
-            this.state = 'run'
-            this.actionbarVisible = true
+            this.runState = 1
             this.mainDomain.run()
             this.imager.$emit( 'watch', this.mainDomain )
             this.imager.$emit( 'busy', true )
+        },
+
+        showLayout () {
         },
 
         onWindowResize() {
@@ -217,16 +195,16 @@ export default {
         normalize () {
             this.timeCounter ++;
 
-            for ( let i = 0; i < this.mapstack.length; i ++ )
-                this.mapstack[ i ].normalize()
+            for ( let i = 0; i < this.mapStack.length; i ++ )
+                this.mapStack[ i ].normalize()
 
-            while ( this.actionstack.length ) {
-                let action = this.actionstack.pop()
+            while ( this.actionStack.length ) {
+                let action = this.actionStack.pop()
                 if ( action.isFinished() ) {
                     if ( action.successor ) {
-                        let prev = this.actionstack.pop()
+                        let prev = this.actionStack.pop()
                         prev.state = action.state
-                        this.actionstack.push( prev )
+                        this.actionStack.push( prev )
                     }
                 }
                 else if ( action.isPending() ) {
@@ -234,7 +212,7 @@ export default {
                     action.target.$emit( 'talk', action )
                 }
                 else if ( action.isRunning() )
-                    this.actionstack.push( action )
+                    this.actionStack.push( action )
             }
 
         }
@@ -249,37 +227,6 @@ export default {
 
 .y-engineer {
     position: relative;
-}
-
-.y-engineer .cover {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-
-    background-color: rgba(240, 240, 240, .86);
-    z-index: 100;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.y-engineer .cover .box-card {
-    width: 400px;
-    border-radius: 16px;
-}
-
-.y-engineer .cover .el-rate {
-    padding-top: 8px;
-}
-
-.y-engineer .cover .el-button {
-    width: 80%;
-    max-width: 180px;
-    margin-top: 30px
 }
 
 .y-engineer .actionbar {

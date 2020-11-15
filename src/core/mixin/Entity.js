@@ -5,7 +5,7 @@ var MixinEntity = {
             layer: 0,
             viewstack: [],
             mapstack: [],
-        },
+        }
     },
     
 }
