@@ -3,11 +3,15 @@
     <StartPage
       :title="title"
       :options="runOptions"
-      v-show="isReady"></StartPage>
+      v-if="isPrepare"></StartPage>
     <ControlBox
-      v-show="isLiving"></ControlBox>
+      v-if="isLiving"></ControlBox>
     <LayoutBox
-      ref="layout"
+      v-if="layoutVisible"
+      @hide="hideLayout"
+      @add="onLayoutAdd"
+      @remove="onLayoutRemove"
+      @select="onLayoutSelect"
       :viewsets="viewsets"></LayoutBox>
     <CoreImager
       :viewsets="viewsets"
@@ -25,10 +29,10 @@ import CoreImager from './Imager.vue'
 
 
 const MODE = {
-    Idle: -1,
-    Setting: 0,
+    Idle: 0,
     Living: 1,
     Learning: 2,
+    Setting: 3,
 }
 
 const STATE = {
@@ -60,8 +64,8 @@ export default {
 
     computed: {
 
-        isReady () {
-            return this.state === STATE.Ready
+        isPrepare () {
+            return this.state === STATE.New
         },
 
         isLiving () {
@@ -93,6 +97,9 @@ export default {
             // 视图，每一个视图都是一个或者多个视图的集合
             viewsets: [],
 
+            // 使命和目标
+            missions: [],
+
             runOptions: {
                 fullScreen: false,
                 runSpeed: 1,
@@ -110,6 +117,8 @@ export default {
             // 定时器 Id
             intervalId: null,
 
+            // 布局模式
+            layoutVisible: false,
         }
     },
 
@@ -121,34 +130,30 @@ export default {
         this.imager = this.$refs.imager
         this.imager.resize( width, height )
 
-        this.$on( 'pause', this.onEventPause )
-        this.$on( 'enter', this.onEventEnter )
-        this.$on( 'leave', this.onEventLeave )
-
         window.addEventListener( 'resize', this.onWindowResize, false )
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
         } )
-
-        this.state = STATE.Ready
     },
 
     methods: {
 
         run () {
-            this.state = STATE.Running
-            this.mode = MODE.Living
+            this.state = STATE.Ready
 
             this.imager.$emit( 'watch', this.mainDomain )
             this.imager.$emit( 'busy', true )
-            // watch mainDomain
-            // mainDomain.run
             this.mainDomain.start()
+
             this.intervalId = window.setInterval( this.normalize, this.timeUnit )
         },
 
         showLayout () {
-            this.$refs.layout.visible = true
+            this.layoutVisible = true
+        },
+
+        hideLayout () {
+            this.layoutVisible = false
         },
 
         start () {
@@ -164,6 +169,9 @@ export default {
                 return;
 
             this.timeCounter ++;
+
+            // while ( this.missions.length ) {
+            // }
 
             this.mainDomain.normalize()
 
@@ -186,12 +194,68 @@ export default {
 
         },
 
-        onWindowResize() {
+        onWindowResize () {
             let rect = this.$el.getBoundingClientRect()
             let width = window.innerWidth - rect.left
             let height = window.innerHeight - rect.top
             if ( this.imager )
                 this.imager.resize( width, height )
+        },
+
+        onModeStart ( mode, state, actionStack ) {
+            this.frameStack.push( {
+                mode: this.mode,
+                state: this.state,
+                actionStack: this.actionStack
+            } )
+
+            this.mode = mode
+            this.state = state
+            this.actionStack = actionStack
+        },
+
+        onModeEnd () {
+            if ( this.frameStack.length ) {
+                let frame = this.frameStack.pop()
+                this.mode = frame.mode
+                this.state = frame.state
+                this.actionStack = frame.actionStack
+            }
+        },
+
+        onLayoutAdd () {
+            const element = document.createElement( 'div' )
+            let viewset = {
+                inactive: false,
+                element: element,
+                image: '',
+                scenes: []
+            }
+            this.imager.$el.appendChild( element )
+            this.viewsets.push( viewset )
+        },
+
+        onLayoutSelect ( index ) {
+            this.viewsets.forEach( item => item.inactive = true )
+            this.viewsets[ index ].inactive = false
+        },
+
+        onLayoutRemove ( index ) {
+            let item = this.viewsets.splice( index, 1 )
+            this.imager.$el.removeChild( item.element )
+            for ( let i = 0; i < item.scenes.length; i ++ ) {
+                let scene = item.scenes[ i ]
+                scene.userData.camera.dispose()
+                scene.userData.renderer.dispose()
+                scene.userData.control.dispose()
+                scene.userData.source.destroy()
+                scene.dispose()
+            }
+            if ( ! item.inactive ) {
+                if ( ! this.viewsets.length )
+                    this.onLayoutAdd()
+                this.onLayoutSelect( 0 )
+            }
         },
 
         onKeyup ( e ) {
@@ -205,23 +269,15 @@ export default {
                 this.$emit( 'pause' )
             }
             else if ( e.code === 'Enter' ) {
-                this.$emit( 'enter', e.shiftKey )
+                this.$emit( 'enter', e.ctrlKey, e.altKey )
             }
             else if ( e.code === 'Escape' ) {
-                this.$emit( 'leave', e.shiftKey )
+                this.layoutVisible = false
             }
-        },
-
-        onEventPause () {
-            this.$message( 'pause event' )
-        },
-
-        onEventEnter ( shift ) {
-            this.$message( 'shift value is ' + shift )
-        },
-
-        onEventLeave ( shift ) {
-            this.$message( 'leave event with shift ' + shift )
+            else if ( e.code === 'Tab' ) {
+                if ( e.shiftKey )
+                    this.showLayout()
+            }
         },
 
     }

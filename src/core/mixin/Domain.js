@@ -34,8 +34,15 @@ var MixinDomain = {
     methods: {
 
         talk ( target, message, options ) {
-            // target 也有可能需要在域空间内部进行查找
-            target.$emit( 'talk', message, options )
+            this.findTarget( target ).$emit( 'talk', message, options )
+        },
+
+        findTarget ( target ) {
+            // 如果 target 是一个域空间实例，直接返回
+            // 如果 target 是一个域空间定义，在当前域中查找第一个该类型的域空间
+            // 如果 target 是一个字符串，在当前域中查找该名称对应的域空间
+            // 高级查询支持更多方式来定位域空间
+            return target
         },
 
         findCapacity ( obj, precision ) {

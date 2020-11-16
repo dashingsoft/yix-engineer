@@ -1,18 +1,23 @@
 <template>
-  <div class="y-layoutbox"
-       v-bind:style="{ display: isVisible ? 'flex' : 'none' }"
-       @click="visible = false">
+  <div class="y-layoutbox" @click="$emit( 'hide' )">
     <div v-for="(item, index) in viewsets" :key="index"
-         v-bind:style="{ backgroundImage: item.image }">
-      <el-button type="text" title="关闭" icon="el-icon-close"></el-button>
+         v-bind:style="{ backgroundImage: item.image }"
+         @click.stop="$emit( 'select', index )">
+      <el-button type="text" title="关闭" icon="el-icon-close"
+                 @click.stop="$emit( 'remove', index )"></el-button>
     </div>
     <div>
-      <div class="y-toolbox">
-        <el-button type="info" title="简单视图"><img src="../assets/square.svg"/></el-button>
-        <el-button type="info" title="主从视图"><img src="../assets/grid-1x2.svg"/></el-button>
-        <el-button type="info" title="表格视图"><img src="../assets/grid.svg"/></el-button>
+      <div class="y-toolbox" v-show="false">
+        <el-button type="info" title="简单视图" @click="$emit( 'add' )">
+          <img src="../assets/square.svg"/></el-button>
+        <el-button type="info" title="主从视图" @click="$emit( 'add' )">
+          <img src="../assets/grid-1x2.svg"/></el-button>
+        <el-button type="info" title="表格视图" @click="$emit( 'add' )">
+          <img src="../assets/grid.svg"/></el-button>
       </div>
-      <div><i class="el-icon-plus"></i></div>
+      <div @click.stop="$emit( 'add' )">
+        <i class="el-icon-plus"></i>
+      </div>
     </div>
   </div>
 </template>
@@ -23,20 +28,8 @@ export default {
     name: 'LayoutBox',
 
     props: {
-        viewsets: Array
+        viewsets: Array,
     },
-
-    computed: {
-        isVisible () {
-            return this.visible
-        }
-    },
-
-    data() {
-        return {
-            visible: false
-        }
-    }
 }
 
 </script>
@@ -51,17 +44,22 @@ export default {
     z-index: 102;
 
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: strech;
 
-    padding: 16px;
+    padding: 16px 160px;
     background: #909399;
 }
 
 .y-layoutbox > div {
     position: relative;
     width: 160px;
+    height: 100px;
+    flex-shrink: 0;
     margin-right: 32px;
+    margin-top: 32px;
+    margin-bottom: 32px;
     text-align: center;
     border: 1px #DCDFE6 solid;
     background-size: cover;
@@ -72,8 +70,8 @@ export default {
     position: absolute;
     left: 10px;
     right: 10px;
-    top: 0;
-    bottom: 0;
+    top: 30%;
+    bottom: 30%;
 
     display: flex;
     justify-content: center;
@@ -104,6 +102,7 @@ export default {
 .y-layoutbox .el-icon-plus {
     padding: 32px;
     font-size: 2em;
+    cursor: pointer;
     color: rgba(48, 48, 48, .3);
 }
 

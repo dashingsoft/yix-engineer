@@ -9,8 +9,10 @@ import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRe
 import { MapControls as Controls } from 'three/examples/jsm/controls/OrbitControls.js'
 // import { Controls } from './Controls.js'
 
-let idlescene, idlecamera, idlecontrol
+
+let idleScene, idleCamera, idleControl
 let renderer1, renderer2
+
 
 export default {
     name: 'CoreImager',
@@ -21,16 +23,14 @@ export default {
 
     data() {
         return {
-            scenes: [],
+            relScene: null,
+            relCamera: null,
 
-            relscene: null,
-            relcamera: null,
+            mapControl: null,
 
-            mapcontrols: null,
-
-            floatscene: null,
-            floatcamera: null,
-            floatcontrols: null,
+            floatScene: null,
+            floatCamera: null,
+            floatControl: null,
 
             width: 800,
             height: 600,
@@ -39,21 +39,10 @@ export default {
 
     computed: {
         currentViewset () {
-            let viewsets = this.viewsets
-            for ( let i = 0; i < viewsets.length; i ++ )
-                if ( ! viewsets[ i ].inactive )
-                    return viewsets[ i ]
-
-            const element = document.createElement( 'div' )
-            let viewset = {
-                inactive: false,
-                element: element,
-                image: '',
-                scenes: []
-            }
-            this.$el.appendChild( element )
-            viewsets.push.call( viewsets, viewset )
-            return viewset
+            for ( let i = 0; i < this.viewsets.length; i ++ )
+                if ( ! this.viewsets[ i ].inactive )
+                    return this.viewsets[ i ]
+            return { scenes: [] }
         }
     },
 
@@ -66,20 +55,20 @@ export default {
         this.width = width
         this.height = height
 
-        this.relcamera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
-        this.relcamera.position.set( 200, 200, 200 )
+        this.relCamera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
+        this.relCamera.position.set( 200, 200, 200 )
 
-        this.relscene = new THREE.Scene()
-        this.relscene.background = new THREE.Color( 0xf0f0f0 )
+        this.relScene = new THREE.Scene()
+        this.relScene.background = new THREE.Color( 0xf0f0f0 )
 
-        idlecamera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
-        idlecamera.position.set( 200, 200, 200 )
+        idleCamera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
+        idleCamera.position.set( 200, 200, 200 )
 
-        idlescene = new THREE.Scene()
+        idleScene = new THREE.Scene()
         this.reset()
 
         // const axesHelper = new THREE.AxesHelper( 200 );
-        // this.relscene.add( axesHelper );
+        // this.relScene.add( axesHelper );
 
         //
         renderer1 = new THREE.WebGLRenderer( {
@@ -95,13 +84,13 @@ export default {
         renderer2.domElement.style.top = 0;
         this.$el.appendChild( renderer2.domElement );
 
-        idlecontrol = new Controls( idlecamera, this.$el );
-        idlecontrol.enableDamping = true;
-        idlecontrol.dampingFactor = 0.05;
-        idlecontrol.screenSpacePanning = false;
-        idlecontrol.minDistance = 100;
-        idlecontrol.maxDistance = 1000;
-        idlecontrol.maxPolarAngle = Math.PI / 2;
+        idleControl = new Controls( idleCamera, this.$el );
+        idleControl.enableDamping = true;
+        idleControl.dampingFactor = 0.05;
+        idleControl.screenSpacePanning = false;
+        idleControl.minDistance = 100;
+        idleControl.maxDistance = 1000;
+        idleControl.maxPolarAngle = Math.PI / 2;
 
         this.$on( 'watch', this.onEventWatch )
         this.$on( 'busy', this.onEventBusy )
@@ -114,8 +103,8 @@ export default {
         resize ( width, height ) {
             this.width = width
             this.height = height
-            this.relcamera.aspect = width / height
-            this.relcamera.updateProjectionMatrix()
+            this.relCamera.aspect = width / height
+            this.relCamera.updateProjectionMatrix()
             renderer1.setSize( width, height )
             renderer2.setSize( width, height )
         },
@@ -128,19 +117,18 @@ export default {
 
         render () {
 
-            if ( this.relscene.visible )
-                renderer1.render( this.relscene, this.relcamera )
+            if ( this.relScene.visible )
+                renderer1.render( this.relScene, this.relCamera )
 
-            if ( idlescene.visible ) {
-                idlecontrol.update()
-                renderer2.render( idlescene, idlecamera )
+            if ( idleScene.visible ) {
+                idleControl.update()
+                renderer2.render( idleScene, idleCamera )
             }
 
-            for ( let j = 0; j < this.currentViewset.scenes.length; j ++ ) {
-                let scene = this.currentViewset.scenes[ j ]
+            this.currentViewset.scenes.forEach ( scene => {
                 scene.userData.control.update()
                 scene.userData.renderer.render( scene, scene.userData.camera )
-            }
+            } )
 
         },
 
@@ -152,7 +140,7 @@ export default {
                 side: THREE.DoubleSide
             } )
 
-            idlescene.remove.apply( idlescene, idlescene.children )
+            idleScene.remove.apply( idleScene, idleScene.children )
             for ( let i = 0; i < 10; i ++ ) {
                 const element = document.createElement( 'div' )
                 element.style.width = '100px'
@@ -169,14 +157,14 @@ export default {
                 object.rotation.z = Math.random()
                 object.scale.x = Math.random() + 0.5
                 object.scale.y = Math.random() + 0.5
-                idlescene.add( object )
+                idleScene.add( object )
 
                 const geometry = new THREE.PlaneBufferGeometry( 100, 100 )
                 const mesh = new THREE.Mesh( geometry, material )
                 mesh.position.copy( object.position )
                 mesh.rotation.copy( object.rotation )
                 mesh.scale.copy( object.scale )
-                // this.relscene.add( mesh )
+                // this.relScene.add( mesh )
             }
         },
 
@@ -204,7 +192,7 @@ export default {
             renderer.domElement.style.position = 'absolute'
             renderer.domElement.style.left = rect.left + 'px'
             renderer.domElement.style.top = rect.top + 'px'
-            this.currentViewset.element.appendChild( renderer.domElement )
+            // this.currentViewset.element.appendChild( renderer.domElement )
 
             let control = new Controls( camera, renderer.domElement )
             control.enableDamping = true;
@@ -214,11 +202,12 @@ export default {
             control.maxDistance = 1000;
             control.maxPolarAngle = Math.PI / 2;
 
+            scene.userData.source = obj
             scene.userData.camera = camera
             scene.userData.control = control
             scene.userData.renderer = renderer
 
-            this.currentViewset.scenes.push( scene )
+            // this.currentViewset.scenes.push( scene )
         },
 
         onEventMap ( relations ) {
@@ -226,9 +215,10 @@ export default {
         },
 
         onEventBusy ( value ) {
-            idlescene.visible =  ! value
+            idleScene.visible =  ! value
             renderer2.domElement.style.display = value ? 'none' : ''
         },
+
     }
 }
 </script>

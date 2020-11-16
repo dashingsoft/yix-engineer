@@ -17,8 +17,8 @@ export default {
         Engineer
     },
     created() {
-        const ComputerType = Vue.extend( RealComputer )
-        this.mainDomain = new ComputerType()
+        const RealComputerObject = Vue.extend( RealComputer )
+        this.mainDomain = new RealComputerObject()
         this.mainDomain.$mount()
     },
     data() {
