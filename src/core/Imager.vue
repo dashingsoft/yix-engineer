@@ -192,7 +192,7 @@ export default {
             renderer.domElement.style.position = 'absolute'
             renderer.domElement.style.left = rect.left + 'px'
             renderer.domElement.style.top = rect.top + 'px'
-            // this.currentViewset.element.appendChild( renderer.domElement )
+            this.currentViewset.element.appendChild( renderer.domElement )
 
             let control = new Controls( camera, renderer.domElement )
             control.enableDamping = true;
@@ -207,7 +207,7 @@ export default {
             scene.userData.control = control
             scene.userData.renderer = renderer
 
-            // this.currentViewset.scenes.push( scene )
+            this.currentViewset.scenes.push( scene )
         },
 
         onEventMap ( relations ) {

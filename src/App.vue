@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Engineer :main-domain="mainDomain" title="运行 foo.c"></Engineer>
+    <Engineer :title="title" ref="engineer"></Engineer>
   </div>
 </template>
 
@@ -8,7 +8,6 @@
 import Vue from "vue"
 import Engineer from './core/Engineer.vue'
 import RealComputer from './domains/real/Computer.vue'
-// import RealComputer from './domains/computer/Machine.vue'
 
 
 export default {
@@ -16,15 +15,28 @@ export default {
     components: {
         Engineer
     },
-    created() {
-        const RealComputerObject = Vue.extend( RealComputer )
-        this.mainDomain = new RealComputerObject()
-        this.mainDomain.$mount()
-    },
-    data() {
+    data () {
         return {
-            mainDomain: null,
+            title: '代码帮'
         }
+    },
+    mounted () {
+        let engineer = this.$refs.engineer
+        const RealComputerObject = Vue.extend( RealComputer )
+        let computer = new RealComputerObject()
+        engineer.initMainDomain( computer )
+
+        let filename = '/Users/jondy/workspace/yix-engineer/test/samples/foo'
+        computer.initDiskFile( filename )
+        computer.initStartup( filename )
+
+        // engineer.missions.push( file )
+        let actions = []
+        // Set init action stack:
+        //     computer, load, Process( 'foo.exe' )
+        //     engineer enter living mode
+        //     computer, process.start()
+        engineer.initActionStack( actions )
     }
 }
 </script>
@@ -36,7 +48,7 @@ export default {
     -moz-osx-font-smoothing: grayscale;
     position: relative;
     overflow: hidden;
-    height: 100%;  
+    height: 100%;
 }
 
 html, body {
@@ -49,5 +61,5 @@ html, body {
 canvas {
     z-order: -1;
 }
-    
+
 </style>

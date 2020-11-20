@@ -28,7 +28,18 @@
 <script>
 
 export default {
-    name: 'Controlbox',
+    name: 'ControlBox',
+
+    props: {
+        mode: Number,
+        state: Number,
+    },
+
+    computed: {
+        isRunning () {
+            return this.state === 2
+        }
+    }
 }
 
 </script>

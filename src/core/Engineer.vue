@@ -5,6 +5,8 @@
       :options="runOptions"
       v-if="isPrepare"></StartPage>
     <ControlBox
+      :mode="mode"
+      :state="state"
       v-if="isLiving"></ControlBox>
     <LayoutBox
       v-if="layoutVisible"
@@ -32,7 +34,6 @@ const MODE = {
     Idle: 0,
     Living: 1,
     Learning: 2,
-    Setting: 3,
 }
 
 const STATE = {
@@ -58,14 +59,13 @@ export default {
     },
 
     props: {
-        title: String,
-        mainDomain: Object
+        title: String
     },
 
     computed: {
 
         isPrepare () {
-            return this.state === STATE.New
+            return this.state === STATE.New || this.state === STATE.Ready
         },
 
         isLiving () {
@@ -78,6 +78,7 @@ export default {
     data() {
         return {
             imager: null,
+            mainDomain: null,
 
             // 当前模式
             mode: MODE.Idle,
@@ -88,10 +89,10 @@ export default {
             // 操作列表
             actionStack: [],
 
-            // 映射列表
+            // 映射列表，暂时没有使用，
             mapStack: [],
 
-            // 学习步骤，每一层堆栈包括：mode, state, actionStack
+            // 学习步骤，暂时没有使用
             frameStack: [],
 
             // 视图，每一个视图都是一个或者多个视图的集合
@@ -134,17 +135,29 @@ export default {
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
         } )
+
+        this.onLayoutAdd()
     },
 
     methods: {
 
-        run () {
-            this.state = STATE.Ready
+        initMainDomain ( domain ) {
+            this.mainDomain = domain
+            domain.$mount()
+        },
 
+        initActionStack ( actions ) {
+            this.actionStack = actions
+            this.state = STATE.Ready
+        },
+
+        run () {
             this.imager.$emit( 'watch', this.mainDomain )
             this.imager.$emit( 'busy', true )
             this.mainDomain.start()
 
+            this.mode = MODE.Living
+            this.state = STATE.Running
             this.intervalId = window.setInterval( this.normalize, this.timeUnit )
         },
 
@@ -170,9 +183,6 @@ export default {
 
             this.timeCounter ++;
 
-            // while ( this.missions.length ) {
-            // }
-
             this.mainDomain.normalize()
 
             while ( this.actionStack.length ) {
@@ -192,6 +202,9 @@ export default {
                     this.actionStack.push( action )
             }
 
+            // while ( this.missions.length ) {
+            // }
+
         },
 
         onWindowResize () {
@@ -200,6 +213,12 @@ export default {
             let height = window.innerHeight - rect.top
             if ( this.imager )
                 this.imager.resize( width, height )
+        },
+
+        onModeInit ( mode, state, actionStack ) {
+            this.mode = mode
+            this.state = state
+            this.actionStack = actionStack
         },
 
         onModeStart ( mode, state, actionStack ) {
