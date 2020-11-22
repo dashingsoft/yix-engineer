@@ -27,6 +27,13 @@ import Action from "../medium/Action.js"
 
 var MixinDomain = {
 
+    data () {
+        return {
+            // 子域空间
+            domainChildren: []
+        }
+    },
+
     mounted () {
         this.$on( 'talk', this.onEventTalk )
     },

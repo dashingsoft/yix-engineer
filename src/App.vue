@@ -17,7 +17,7 @@ export default {
     },
     data () {
         return {
-            title: '代码帮'
+            title: '易科引擎'
         }
     },
     mounted () {

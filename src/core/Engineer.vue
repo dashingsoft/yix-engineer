@@ -1,29 +1,65 @@
 <template>
   <div class="y-engineer">
-    <StartPage
-      :title="title"
-      :options="runOptions"
-      v-if="isPrepare"></StartPage>
-    <ControlBox
-      :mode="mode"
-      :state="state"
-      v-if="isLiving"></ControlBox>
-    <LayoutBox
-      v-if="layoutVisible"
-      @hide="hideLayout"
-      @add="onLayoutAdd"
-      @remove="onLayoutRemove"
-      @select="onLayoutSelect"
-      :viewsets="viewsets"></LayoutBox>
-    <CoreImager
-      :viewsets="viewsets"
-      ref="imager"></CoreImager>
+    <CoreView :title="title">
+      <template v-slot:toolbar>
+        <el-button
+          size="mini"
+          title="创建"
+          icon="el-icon-plus"></el-button>
+        <el-button
+          size="mini"
+          title="学习"
+          icon="el-icon-guide"></el-button>
+        <el-button
+          size="mini"
+          title="观察"
+          icon="el-icon-video-camera"></el-button>
+        <el-button
+          size="mini"
+          title="使命"
+          :missions="missions"
+          @click="showMissionPage"
+          icon="el-icon-alarm-clock"></el-button>
+        <el-button
+          size="mini"
+          title="选项"
+          icon="el-icon-setting"></el-button>
+      </template>
+      <template v-slot:body>
+        引擎轰鸣
+      </template>
+    </CoreView>
+    <MissionPage
+      v-if="missionVisible"
+      @mission="onEventMission"></MissionPage>
+    <div class="y-living" v-show="isLiving">
+      <StartPage
+        :title="title"
+        :options="runOptions"
+        v-if="isPrepare"></StartPage>
+      <ControlBox
+        :mode="mode"
+        :state="state"
+        v-if="isLiving"></ControlBox>
+      <LayoutBox
+        v-if="layoutVisible"
+        @hide="hideLayout"
+        @add="onLayoutAdd"
+        @remove="onLayoutRemove"
+        @select="onLayoutSelect"
+        :viewsets="viewsets"></LayoutBox>
+      <CoreImager
+        :viewsets="viewsets"
+        ref="imager"></CoreImager>
+    </div>
   </div>
 </template>
 
 <script>
+import CoreView from "./View.vue"
 import MixinDomain from './mixin/Domain.js'
 
+import MissionPage from './Mission.vue'
 import StartPage from './Start.vue'
 import ControlBox from './Control.vue'
 import LayoutBox from './Layout.vue'
@@ -52,6 +88,8 @@ export default {
     name: 'Engineer',
 
     components: {
+        CoreView,
+        MissionPage,
         StartPage,
         ControlBox,
         LayoutBox,
@@ -79,6 +117,12 @@ export default {
         return {
             imager: null,
             mainDomain: null,
+
+            // 域空间仓库，存放所有注册的域空间
+            domainStore: [],
+
+            // 插件
+            plugins: [],
 
             // 当前模式
             mode: MODE.Idle,
@@ -118,12 +162,26 @@ export default {
             // 定时器 Id
             intervalId: null,
 
-            // 布局模式
+            // 显示布局
             layoutVisible: false,
+
+            // 显示使命
+            missionVisible: false,
         }
     },
 
+    created () {
+        // 注册默认域空间，存放到域空间仓库
+
+        // 注册默认 plugins
+    },
+
     mounted () {
+        // 调用插件的初始化
+        for ( let i = 0; i < this.plugins.length; i ++ )
+            this.plugins[ i ].init( this )
+
+        // 初始化 Imager
         let rect = this.$el.getBoundingClientRect()
         let width = window.innerWidth - rect.left
         let height = window.innerHeight - rect.top
@@ -131,11 +189,13 @@ export default {
         this.imager = this.$refs.imager
         this.imager.resize( width, height )
 
+        // 初始化快捷键
         window.addEventListener( 'resize', this.onWindowResize, false )
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
         } )
 
+        // 初始化布局
         this.onLayoutAdd()
     },
 
@@ -159,6 +219,10 @@ export default {
             this.mode = MODE.Living
             this.state = STATE.Running
             this.intervalId = window.setInterval( this.normalize, this.timeUnit )
+        },
+
+        showMissionPage () {
+            this.missionVisible = true
         },
 
         showLayout () {
@@ -213,6 +277,10 @@ export default {
             let height = window.innerHeight - rect.top
             if ( this.imager )
                 this.imager.resize( width, height )
+        },
+
+        onEventMission ( ) {
+            this.missionVisible = false
         },
 
         onModeInit ( mode, state, actionStack ) {

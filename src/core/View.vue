@@ -1,8 +1,7 @@
 <template>
   <div
     class="y-view"
-    v-show="visible"
-    v-bind:style="{ width: width + 'px', height: height + 'px' }">
+    v-show="visible">
 
     <div class="titlebar">
       <el-button
@@ -12,6 +11,7 @@
         icon="el-icon-close"></el-button>
       <span>{{ title }}</span>
       <div class="toolbox">
+        <slot name="toolbar"></slot>
         <el-button
           size="mini"
           title="单视图模式"
@@ -90,6 +90,7 @@ export default {
     flex-direction: row;
     align-items: center;
     padding: 0 0 0 6px;
+    background: #F0F0F0;
     border-bottom: 1px #E4E7ED solid;
 }
 
