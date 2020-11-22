@@ -1,11 +1,9 @@
-var MixinView = {
+export default {
 
     data () {
         return {
             basestone: null
         },
     },
-    
-}
 
-export { MixinView }
+}

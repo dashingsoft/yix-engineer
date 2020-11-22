@@ -1,4 +1,4 @@
-var MixinChaos = {
+export default {
 
     data () {
         return {
@@ -7,5 +7,3 @@ var MixinChaos = {
     },
 
 }
-
-export { MixinChaos }

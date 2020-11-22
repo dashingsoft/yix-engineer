@@ -25,7 +25,7 @@
 
 import Action from "../medium/Action.js"
 
-var MixinDomain = {
+export default {
 
     data () {
         return {
@@ -93,4 +93,4 @@ var MixinDomain = {
 
 }
 
-export { MixinDomain }
+// export { MixinDomain }

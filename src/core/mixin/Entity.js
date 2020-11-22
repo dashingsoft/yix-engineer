@@ -1,4 +1,4 @@
-var MixinEntity = {
+export default {
 
     data () {
         return {
@@ -9,5 +9,3 @@ var MixinEntity = {
     },
     
 }
-
-export { MixinEntity }
