@@ -31,12 +31,12 @@ export default {
         computer.initStartup( filename )
 
         // engineer.missions.push( file )
-        let actions = []
+        // let actions = []
         // Set init action stack:
         //     computer, load, Process( 'foo.exe' )
         //     engineer enter living mode
         //     computer, process.start()
-        engineer.initActionStack( actions )
+        // engineer.initActionStack( actions )
     }
 }
 </script>

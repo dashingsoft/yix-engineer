@@ -14,7 +14,7 @@
         <slot name="toolbar"></slot>
         <el-button
           size="mini"
-          title="单视图模式"
+          title="缩略图模式"
           icon="el-icon-news"></el-button>
         <el-button
           size="mini"
@@ -26,7 +26,7 @@
             class="el-icon-more el-dropdown-link">
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="activate">设为主视图</el-dropdown-item>
+            <el-dropdown-item command="activate">设为活动视图</el-dropdown-item>
             <el-dropdown-item command="relate">选择关联视图</el-dropdown-item>
             <el-dropdown-item command="all">显示所有视图</el-dropdown-item>
           </el-dropdown-menu>
@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <div class="body">
+    <div class="v-body">
       <slot name="body"></slot>
     </div>
 

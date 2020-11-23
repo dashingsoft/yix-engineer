@@ -9,7 +9,6 @@ import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRe
 import { MapControls as Controls } from 'three/examples/jsm/controls/OrbitControls.js'
 // import { Controls } from './Controls.js'
 
-
 let idleScene, idleCamera, idleControl
 let renderer1, renderer2
 
@@ -89,7 +88,7 @@ export default {
         renderer2.domElement.style.top = 0;
         this.$el.appendChild( renderer2.domElement );
 
-        idleControl = new Controls( idleCamera, this.$el );
+        idleControl = new Controls( idleCamera, document.body );
         idleControl.enableDamping = true;
         idleControl.dampingFactor = 0.05;
         idleControl.screenSpacePanning = false;
@@ -106,12 +105,32 @@ export default {
     methods: {
 
         resize ( width, height ) {
+            let aspect = width / height
             this.width = width
             this.height = height
-            this.relCamera.aspect = width / height
+            this.relCamera.aspect = aspect
             this.relCamera.updateProjectionMatrix()
+            idleCamera.aspect = aspect
+            idleCamera.updateProjectionMatrix()
             renderer1.setSize( width, height )
             renderer2.setSize( width, height )
+
+            this.currentViewset.scenes.forEach ( scene => {
+                scene.userData.camera.aspect = aspect
+                scene.userData.renderer.setSize( width, height )
+            } )
+
+            this.$el.style.width = width + 'px'
+            this.$el.style.height = height + 'px'
+            this.render()
+        },
+
+        translate ( x, y ) {
+            this.$el.style.left = x + 'px'
+            this.$el.style.top = y + 'px'
+            // this.$el.style.transform = ( x === 0 && y === 0 )
+            //     ? 'none'
+            //    : 'translate(' + x + 'px, ' + y + 'px)'
         },
 
         animate () {
@@ -230,6 +249,7 @@ export default {
 
 <style>
 .y-imager {
-    position: relative;
+    position: absolute;
+    z-index: 2;
 }
 </style>

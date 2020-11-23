@@ -1,56 +1,66 @@
 <template>
   <div class="y-engineer">
-    <CoreView :title="title">
+    <CoreView :title="title" v-show="isNormalMode">
       <template v-slot:toolbar>
         <el-button
           size="mini"
           title="创建"
+          @click="$emit( 'page', 'forge' )"
           icon="el-icon-plus"></el-button>
         <el-button
           size="mini"
-          title="学习"
-          icon="el-icon-guide"></el-button>
+          title="学习研究"
+          @click="$emit( 'page', 'learning' )"
+          icon="el-icon-reading"></el-button>
         <el-button
           size="mini"
-          title="观察"
+          title="动画演示"
+          @click="$emit( 'living', 'start' )"
           icon="el-icon-video-camera"></el-button>
         <el-button
           size="mini"
-          title="使命"
-          :missions="missions"
-          @click="showMissionPage"
+          title="目标设定"
+          @click="$emit( 'page', 'mission' )"
           icon="el-icon-alarm-clock"></el-button>
         <el-button
           size="mini"
-          title="选项"
+          title="选项设置"
+          @click="$emit( 'page', 'setting' )"
           icon="el-icon-setting"></el-button>
       </template>
       <template v-slot:body>
-        引擎轰鸣
+        <div class="v-left" v-bind:style="{ width: sidebar.width + 'px' }">
+          <ExplorerView :main-domain="mainDomain"></ExplorerView>
+        </div>
+        <div class="v-right">
+        </div>
       </template>
     </CoreView>
-    <MissionPage
-      v-if="missionVisible"
-      @mission="onEventMission"></MissionPage>
-    <div class="y-living" v-show="isLiving">
+    <CoreImager
+      :viewsets="viewsets"
+      ref="imager"></CoreImager>
+    <ControlBox
+      :state="state"
+      @living="onEventLiving"
+      @page="onEventPage"
+      v-if="isLivingMode"></ControlBox>
+    <div class="y-page-container">
+      <ForgePage
+        v-if="pageVisible.forge"
+        @page="onEventPage"></ForgePage>
+      <MissionPage
+        v-if="pageVisible.mission"
+        :missions="missions"
+        @page="onEventPage"></MissionPage>
+      <LayoutBox
+        v-if="pageVisible.layout"
+        @page="onEventPage"
+        :viewsets="viewsets"></LayoutBox>
       <StartPage
         :title="title"
         :options="runOptions"
-        v-if="isPrepare"></StartPage>
-      <ControlBox
-        :mode="mode"
-        :state="state"
-        v-if="isLiving"></ControlBox>
-      <LayoutBox
-        v-if="layoutVisible"
-        @hide="hideLayout"
-        @add="onLayoutAdd"
-        @remove="onLayoutRemove"
-        @select="onLayoutSelect"
-        :viewsets="viewsets"></LayoutBox>
-      <CoreImager
-        :viewsets="viewsets"
-        ref="imager"></CoreImager>
+        @page="onEventPage"
+        v-if="pageVisible.start"></StartPage>
     </div>
   </div>
 </template>
@@ -60,6 +70,8 @@ import CoreView from "./View.vue"
 import MixinDomain from './mixin/Domain.js'
 
 import MissionPage from './Mission.vue'
+import ForgePage from './Forge.vue'
+import ExplorerView from './Explorer.vue'
 import StartPage from './Start.vue'
 import ControlBox from './Control.vue'
 import LayoutBox from './Layout.vue'
@@ -67,9 +79,9 @@ import CoreImager from './Imager.vue'
 
 
 const MODE = {
-    Idle: 0,
-    Living: 1,
-    Learning: 2,
+    Normal: 0,
+    FullPage: 1,
+    FullScreen: 2,
 }
 
 const STATE = {
@@ -84,15 +96,19 @@ const STATE = {
 
 
 export default {
-    extends: MixinDomain,
+    mixins: [ MixinDomain ],
     name: 'Engineer',
 
     components: {
         CoreView,
+        ExplorerView,
+
         MissionPage,
+        ForgePage,
         StartPage,
-        ControlBox,
         LayoutBox,
+
+        ControlBox,
         CoreImager
     },
 
@@ -102,13 +118,12 @@ export default {
 
     computed: {
 
-        isPrepare () {
-            return this.state === STATE.New || this.state === STATE.Ready
+        isNormalMode () {
+            return this.mode === MODE.Normal
         },
 
-        isLiving () {
-            return this.mode === MODE.Living &&
-                [ STATE.Running, STATE.Paused ].indexOf( this.state ) !== -1
+        isLivingMode () {
+            return this.mode === MODE.FullScreen || this.mode === MODE.FullPage
         },
 
     },
@@ -125,7 +140,7 @@ export default {
             plugins: [],
 
             // 当前模式
-            mode: MODE.Idle,
+            mode: MODE.Normal,
 
             // 运行状态
             state: STATE.New,
@@ -162,11 +177,19 @@ export default {
             // 定时器 Id
             intervalId: null,
 
-            // 显示布局
-            layoutVisible: false,
+            // 页面显示控制
+            pageVisible: {
+                forge: false,
+                mission: false,
+                layout: false,
+                start: false,
+            },
 
-            // 显示使命
-            missionVisible: false,
+            // 资源管理器宽度和位置
+            sidebar: {
+                width: 300,
+                top: 50,
+            }
         }
     },
 
@@ -182,12 +205,11 @@ export default {
             this.plugins[ i ].init( this )
 
         // 初始化 Imager
-        let rect = this.$el.getBoundingClientRect()
-        let width = window.innerWidth - rect.left
-        let height = window.innerHeight - rect.top
-
         this.imager = this.$refs.imager
-        this.imager.resize( width, height )
+        this.onWindowResize()
+
+        // 初始化布局
+        this.onLayoutAdd()
 
         // 初始化快捷键
         window.addEventListener( 'resize', this.onWindowResize, false )
@@ -195,45 +217,96 @@ export default {
             this.onKeyup( e )
         } )
 
-        // 初始化布局
-        this.onLayoutAdd()
+        this.$on( 'living', this.onEventLiving )
+        this.$on( 'page', this.onEventPage )
     },
 
     methods: {
 
-        initMainDomain ( domain ) {
+        initMainDomain ( domain, actions ) {
             this.mainDomain = domain
             domain.$mount()
+
+            if ( actions )
+                this.actionStack = actions
+
+            this.state = STATE.Ready
+
+            this.imager.$emit( 'watch', this.mainDomain )
+            this.imager.$emit( 'busy', true )
         },
 
-        initActionStack ( actions ) {
-            this.actionStack = actions
-            this.state = STATE.Ready
+        resetViewport () {
+            if ( ! this.imager )
+                return
+
+            let rect = this.$el.getBoundingClientRect()
+            let width = window.innerWidth - rect.left
+            let height = window.innerHeight - rect.top
+
+            if ( this.mode === MODE.Normal ) {
+                this.imager.translate( this.sidebar.width, this.sidebar.top )
+                this.imager.resize( width - this.sidebar.width, height - this.sidebar.top )
+            }
+            else {
+                this.imager.translate( 0, 0 )
+                this.imager.resize( width, height )
+            }
+        },
+
+        onEventPage ( name, action ) {
+
+            if ( action === undefined || action === 'show' )
+                this.pageVisible[ name ] = true
+
+            else if ( action === false )
+                this.pageVisible[ name ] = false
+
+            else if ( name === 'mission' ) {
+                this.pageVisible.mission = false
+            }
+
+            else if ( name === 'forge' ) {
+                this.pageVisible.forge = false
+            }
+
+            else if ( name === 'layout' ) {
+                this.pageVisible.layout = false
+            }
+
+            else if ( name === 'start' ) {
+                this.pageVisible.start = false
+                this.start()
+            }
+
+            else if ( name === 'learning' ) {
+                this.pageVisible.learning = false
+            }
+
+        },
+
+        onEventLiving ( action, arg ) {
+
+            if ( action === 'viewport' ) {
+                this.mode = arg
+                this.resetViewport()
+            }
+
+            else if ( action === 'start' ) {
+                this.$emit( 'page', 'start' )
+            }
+
         },
 
         run () {
-            this.imager.$emit( 'watch', this.mainDomain )
-            this.imager.$emit( 'busy', true )
             this.mainDomain.start()
-
-            this.mode = MODE.Living
             this.state = STATE.Running
             this.intervalId = window.setInterval( this.normalize, this.timeUnit )
         },
 
-        showMissionPage () {
-            this.missionVisible = true
-        },
-
-        showLayout () {
-            this.layoutVisible = true
-        },
-
-        hideLayout () {
-            this.layoutVisible = false
-        },
-
         start () {
+            this.mode = MODE.FullPage
+            this.resetViewport()
             this.run()
         },
 
@@ -272,42 +345,8 @@ export default {
         },
 
         onWindowResize () {
-            let rect = this.$el.getBoundingClientRect()
-            let width = window.innerWidth - rect.left
-            let height = window.innerHeight - rect.top
-            if ( this.imager )
-                this.imager.resize( width, height )
-        },
-
-        onEventMission ( ) {
-            this.missionVisible = false
-        },
-
-        onModeInit ( mode, state, actionStack ) {
-            this.mode = mode
-            this.state = state
-            this.actionStack = actionStack
-        },
-
-        onModeStart ( mode, state, actionStack ) {
-            this.frameStack.push( {
-                mode: this.mode,
-                state: this.state,
-                actionStack: this.actionStack
-            } )
-
-            this.mode = mode
-            this.state = state
-            this.actionStack = actionStack
-        },
-
-        onModeEnd () {
-            if ( this.frameStack.length ) {
-                let frame = this.frameStack.pop()
-                this.mode = frame.mode
-                this.state = frame.state
-                this.actionStack = frame.actionStack
-            }
+            this.sidebar.top = this.$el.querySelector( '.v-left' ).getBoundingClientRect().top
+            this.resetViewport()
         },
 
         onLayoutAdd () {
@@ -347,23 +386,23 @@ export default {
 
         onKeyup ( e ) {
             console.log ( 'Press ' + e.code )
-            if ( this.state === 'init' ) {
+            if ( this.state === MODE.Ready ) {
                 if ( e.code === 'Enter' )
-                    this.run()
+                    this.start()
             }
 
             else if ( e.code === 'Space' ) {
-                this.$emit( 'pause' )
+                this.$emit( 'command', 'pause' )
             }
             else if ( e.code === 'Enter' ) {
-                this.$emit( 'enter', e.ctrlKey, e.altKey )
+                this.$emit( 'command', 'enter', e.ctrlKey, e.altKey )
             }
             else if ( e.code === 'Escape' ) {
-                this.layoutVisible = false
+                this.pageVisible.layout = false
             }
             else if ( e.code === 'Tab' ) {
                 if ( e.shiftKey )
-                    this.showLayout()
+                    this.$emit( 'page', 'layout' )
             }
         },
 
@@ -377,6 +416,7 @@ export default {
 
 .y-engineer {
     position: relative;
+    height: 100%;
 }
 
 .y-engineer .actionbar {
@@ -471,6 +511,36 @@ export default {
 
 .y-engineer .layoutbar .el-button.el-button--text {
     float: right;
+}
+
+.y-engineer .y-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.y-engineer .v-body {
+    flex-grow: 1;
+
+    position: relative;
+    display: flex;
+}
+
+.y-engineer .v-body > .v-left {
+    flex-grow: 0;
+    padding: 0 0 4px 0;
+}
+
+.y-engineer .v-body > .v-right {
+    flex-grow: 1;
+}
+
+.x-full {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 0;
 }
 
 </style>

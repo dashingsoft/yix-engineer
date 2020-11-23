@@ -27,7 +27,7 @@
       </el-card>
       <el-button
         type="success"
-        @click="$parent.run"
+        @click="$emit( 'page', 'start', 'go' )"
         round>开始</el-button>
     </div>
   </div>
