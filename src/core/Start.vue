@@ -7,10 +7,10 @@
         </div>
         <el-form label-width="auto" size="medium">
           <el-form-item label="全屏模式">
-            <el-switch v-model="options.fullScreen"></el-switch>
+            <el-switch v-model="runOptions.fullScreen"></el-switch>
           </el-form-item>
           <el-form-item label="运行粒度">
-            <el-radio-group v-model="options.runLevel">
+            <el-radio-group v-model="runOptions.runLevel">
               <el-radio :label="1">源代码</el-radio>
               <el-radio :label="2">汇编指令</el-radio>
               <el-radio :label="3">微处理器</el-radio>
@@ -21,14 +21,14 @@
               :max="10"
               :texts="speedLabels"
               :show-text="true"
-              v-model="options.runSpeed"></el-rate>
+              v-model="runOptions.runSpeed"></el-rate>
           </el-form-item>
         </el-form>
       </el-card>
       <el-button
         type="success"
-        @click="$emit( 'page', 'start', 'go' )"
-        round>开始</el-button>
+        @click="$emit( 'page', action, action === 'start' ? 'go' : 'close' )"
+        round>{{ action === 'start' ? '开始' : '确定' }}</el-button>
     </div>
   </div>
 </template>
@@ -40,7 +40,8 @@ export default {
 
     props: {
         title: String,
-        options: Object,
+        action: String,
+        runOptions: Object,
     },
 
     data () {

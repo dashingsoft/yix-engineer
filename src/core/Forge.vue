@@ -31,10 +31,11 @@
         </el-form>
       </div>
       <div class="y-card" v-show="active == 1">
-        ss
+        <DataView
+          :table-data="domainProps"></DataView>
       </div>
       <div class="y-card" v-show="active == 2">
-        xx
+        <span>{{ prompt }}</span>
       </div>
       <div class="y-footbar">
         <el-button
@@ -46,19 +47,20 @@
         </el-button>
         <el-button
           round
+          :disabled="active == 2"
+          @click="next">
+          下一步
+          <i class="el-icon-arrow-right el-icon--right"></i>
+        </el-button>
+        <el-button
+          round
           plain
-          v-show="active == 2"
+          style="margin-left: 100px"
+          v-show="true"
           type="primary"
           icon="el-icon-plus"
           @click="finish">
           创建
-        </el-button>
-        <el-button
-          round
-          v-show="active < 2"
-          @click="next">
-          下一步
-          <i class="el-icon-arrow-right el-icon--right"></i>
         </el-button>
       </div>
     </el-card>
@@ -66,9 +68,14 @@
 </template>
 
 <script>
+import DataView from '../components/DataView.vue'
 
 export default {
     name: 'ForgePage',
+
+    components: {
+        DataView,
+    },
 
     props: {
     },
@@ -83,6 +90,14 @@ export default {
                     value: 'File'
                 }
             ],
+            domainProps: [
+                {
+                    name: '文件名称',
+                    type: 'File',
+                    value: ''
+                }
+            ],
+            prompt: '还没有选择要创建的空间类型'
         }
     },
 
@@ -135,6 +150,7 @@ export default {
     flex-direction: column;
     align-items: center;
     padding: 0;
+    min-height: 300px;
 }
 
 .y-page .el-card__body > * {

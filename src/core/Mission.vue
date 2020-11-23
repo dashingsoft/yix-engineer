@@ -1,16 +1,53 @@
 <template>
-  <div>
-    <div class="y-cover">
-      <el-card class="box-card">
-        <div slot="header">
-          <span>使命设置</span>
+  <div class="y-cover fx-center">
+    <el-card class="y-page">
+        <div style="margin: 0; width: 100%; height: 16px">
+          <el-button style="float:right; border: 0; margin: 2px 16px"
+                     size="medium"
+                     icon="el-icon-close"
+                     @click="$emit( 'page', 'mission', false )"></el-button>
         </div>
-      </el-card>
-      <el-button
-        type="success"
-        @click="$emit( 'page', 'mission', changed )"
-        round>确定</el-button>
-    </div>
+      <div class="y-card">
+        <el-table
+          :data="tableData"
+          tooltip-effect="dark"
+          style="width: 100%">
+          <el-table-column
+            type="selection"
+            width="55">
+          </el-table-column>
+          <el-table-column
+            label="目标"
+            width="120">
+            <template slot-scope="scope">{{ scope.row.date }}</template>
+          </el-table-column>
+          <el-table-column
+            prop="name"
+            label="完成条件"
+            width="120">
+          </el-table-column>
+          <el-table-column
+            prop="value"
+            show-overflow-tooltip>
+            <template slot="header">
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-delete"></el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-plus"></el-button>
+            </template>
+            <template slot-scope="scope">
+              <el-input
+                size="mini"
+                v-mode="scope.row.value"></el-input>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -25,6 +62,7 @@ export default {
 
     data () {
         return {
+            tableData: [],
             changed: false,
         }
     }
@@ -33,35 +71,5 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-.y-cover {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-
-    background-color: rgba(240, 240, 240, .86);
-    z-index: 100;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.y-cover .box-card {
-    width: 400px;
-    border-radius: 16px;
-}
-
-.y-cover .el-rate {
-    padding-top: 8px;
-}
-
-.y-cover .el-button {
-    width: 80%;
-    max-width: 180px;
-    margin-top: 30px
-}
+<style>
 </style>

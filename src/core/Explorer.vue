@@ -3,9 +3,11 @@
     <el-table
       size="mini"
       row-key="_uid"
+      ref="table"
       :highlight-current-row="true"
       :data="tableData"
       :show-header="false"
+      @current-change="onCurrentChanged"
       :tree-props="{children: '$children'}">
       <el-table-column
         prop="title"
@@ -45,10 +47,6 @@
 export default {
     name: 'ExplorerView',
 
-    components: {
-
-    },
-
     props: {
         mainDomain: Object,
     },
@@ -56,26 +54,36 @@ export default {
     data() {
         return {
             title: '域空间管理器',
+            currentRow: null,
         }
     },
 
     computed: {
-        tableData: function () {
+        tableData () {
             return this.mainDomain === null ? [] : [ this.mainDomain ]
         },
     },
 
     methods: {
 
-        loadChildren ( row, item, resolve ) {
-            if ( item )
-                resolve( item.domainChildren )
-            else
-                resolve( this.mainDomain )
+        onCurrentChanged ( row, oldRow ) {
+            if ( oldRow )
+                oldRow.$el.classList.remove( 'i-selected' )
+            row.$el.classList.add( 'i-selected' )
+            this.currentRow = row
+            this.$emit( 'domain', 'select', row, oldRow )
+        },
+
+        setCurrentDomain ( row ) {
+            if ( this.currentRow !== row ) {
+                this.currentRow = row
+                this.$refs.table.setCurrentRow( row )
+            }
         },
 
         handleEdit ( index, obj ) {
             console.log( index + obj.title )
+            this.$emit( 'domain', 'edit', obj )
         },
 
         handleDelete ( index, obj ) {

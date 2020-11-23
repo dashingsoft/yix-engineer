@@ -9,14 +9,14 @@
           icon="el-icon-plus"></el-button>
         <el-button
           size="mini"
-          title="学习研究"
-          @click="$emit( 'page', 'learning' )"
-          icon="el-icon-reading"></el-button>
-        <el-button
-          size="mini"
           title="动画演示"
           @click="$emit( 'living', 'start' )"
           icon="el-icon-video-camera"></el-button>
+        <el-button
+          size="mini"
+          title="学习研究"
+          @click="$emit( 'page', 'learning' )"
+          icon="el-icon-reading"></el-button>
         <el-button
           size="mini"
           title="目标设定"
@@ -25,12 +25,15 @@
         <el-button
           size="mini"
           title="选项设置"
-          @click="$emit( 'page', 'setting' )"
+          @click="$emit( 'page', 'settings' )"
           icon="el-icon-setting"></el-button>
       </template>
       <template v-slot:body>
         <div class="v-left" v-bind:style="{ width: sidebar.width + 'px' }">
-          <ExplorerView :main-domain="mainDomain"></ExplorerView>
+          <ExplorerView
+            ref="explorer"
+            @domain="onEventDomain"
+            :main-domain="mainDomain"></ExplorerView>
         </div>
         <div class="v-right">
         </div>
@@ -39,41 +42,57 @@
     <CoreImager
       :viewsets="viewsets"
       ref="imager"></CoreImager>
-    <ControlBox
+    <Livingbar
       :state="state"
       @living="onEventLiving"
       @page="onEventPage"
-      v-if="isLivingMode"></ControlBox>
+      v-if="isLivingMode"></Livingbar>
     <div class="y-page-container">
       <ForgePage
         v-if="pageVisible.forge"
         @page="onEventPage"></ForgePage>
+      <LearningPage
+        v-if="pageVisible.learning"
+        @page="onEventPage"></LearningPage>
       <MissionPage
         v-if="pageVisible.mission"
         :missions="missions"
         @page="onEventPage"></MissionPage>
+      <MaterialPage
+        v-if="pageVisible.material"
+        :target-object="currentDomain"
+        @page="onEventPage"></MaterialPage>
       <LayoutBox
         v-if="pageVisible.layout"
         @page="onEventPage"
         :viewsets="viewsets"></LayoutBox>
       <StartPage
         :title="title"
-        :options="runOptions"
+        action="start"
+        :run-options="runOptions"
         @page="onEventPage"
         v-if="pageVisible.start"></StartPage>
+      <StartPage
+        :title="title"
+        action="settings"
+        :run-options="runOptions"
+        @page="onEventPage"
+        v-if="pageVisible.settings"></StartPage>
     </div>
   </div>
 </template>
 
 <script>
-import CoreView from "./View.vue"
-import MixinDomain from './mixin/Domain.js'
+import CoreView from './View.vue'
+import ExplorerView from './Explorer.vue'
 
+import MaterialPage from './Material.vue'
 import MissionPage from './Mission.vue'
 import ForgePage from './Forge.vue'
-import ExplorerView from './Explorer.vue'
+import LearningPage from './Learning.vue'
 import StartPage from './Start.vue'
-import ControlBox from './Control.vue'
+
+import Livingbar from './Livingbar.vue'
 import LayoutBox from './Layout.vue'
 import CoreImager from './Imager.vue'
 
@@ -96,19 +115,20 @@ const STATE = {
 
 
 export default {
-    mixins: [ MixinDomain ],
     name: 'Engineer',
 
     components: {
         CoreView,
         ExplorerView,
 
-        MissionPage,
         ForgePage,
+        LearningPage,
+        MissionPage,
         StartPage,
-        LayoutBox,
+        MaterialPage,
 
-        ControlBox,
+        LayoutBox,
+        Livingbar,
         CoreImager
     },
 
@@ -132,6 +152,7 @@ export default {
         return {
             imager: null,
             mainDomain: null,
+            currentDomain: null,
 
             // 域空间仓库，存放所有注册的域空间
             domainStore: [],
@@ -180,9 +201,12 @@ export default {
             // 页面显示控制
             pageVisible: {
                 forge: false,
+                learning: false,
                 mission: false,
                 layout: false,
                 start: false,
+                settings: false,
+                material: false,
             },
 
             // 资源管理器宽度和位置
@@ -204,6 +228,8 @@ export default {
         for ( let i = 0; i < this.plugins.length; i ++ )
             this.plugins[ i ].init( this )
 
+        this.explorer = this.$refs.explorer
+
         // 初始化 Imager
         this.imager = this.$refs.imager
         this.onWindowResize()
@@ -219,13 +245,15 @@ export default {
 
         this.$on( 'living', this.onEventLiving )
         this.$on( 'page', this.onEventPage )
+        this.$on( 'domain', this.onEventDomain )
     },
 
     methods: {
 
         initMainDomain ( domain, actions ) {
             this.mainDomain = domain
-            domain.$mount()
+            this.mainDomain.$mount()
+            this.mainDomain.$on( 'engineer', this.onEventEngineer )
 
             if ( actions )
                 this.actionStack = actions
@@ -234,6 +262,19 @@ export default {
 
             this.imager.$emit( 'watch', this.mainDomain )
             this.imager.$emit( 'busy', true )
+        },
+
+        startMainDomain () {
+            this.mode = MODE.FullPage
+            this.resetViewport()
+
+            this.mainDomain.start()
+            this.state = STATE.Running
+            this.intervalId = window.setInterval( this.normalize, this.timeUnit )
+        },
+
+        stopMainDomain () {
+            window.clearInterval( this.intervalId )
         },
 
         resetViewport () {
@@ -259,7 +300,7 @@ export default {
             if ( action === undefined || action === 'show' )
                 this.pageVisible[ name ] = true
 
-            else if ( action === false )
+            else if ( action === false || action === 'close' )
                 this.pageVisible[ name ] = false
 
             else if ( name === 'mission' ) {
@@ -276,11 +317,15 @@ export default {
 
             else if ( name === 'start' ) {
                 this.pageVisible.start = false
-                this.start()
+                this.startMainDomain()
             }
 
             else if ( name === 'learning' ) {
                 this.pageVisible.learning = false
+            }
+
+            else if ( name === 'material' ) {
+                this.pageVisible.material = false
             }
 
         },
@@ -298,20 +343,25 @@ export default {
 
         },
 
-        run () {
-            this.mainDomain.start()
-            this.state = STATE.Running
-            this.intervalId = window.setInterval( this.normalize, this.timeUnit )
+        onEventDomain( action, value ) {
+            if ( action === 'select' ) {
+                this.currentDomain = value
+                this.explorer.setCurrentDomain( value )
+            }
+
+            else if ( action === 'edit' ) {
+                this.currentDomain = value
+                this.$emit( 'page', 'material' )
+            }
         },
 
-        start () {
-            this.mode = MODE.FullPage
-            this.resetViewport()
-            this.run()
-        },
-
-        stop () {
-            window.clearInterval( this.intervalId )
+        onEventEngineer ( action, obj, arg ) {
+            if ( action === 'click' ) {
+                this.$emit( 'domain', 'select', obj )
+            }
+            else if ( action === 'dblclick' ) {
+                console.log( 'dblclick ' + arg )
+            }
         },
 
         normalize () {
@@ -541,6 +591,10 @@ export default {
     top: 0;
     right: 0;
     height: 0;
+}
+
+.i-selected {
+    outline: thick outset pink;
 }
 
 </style>

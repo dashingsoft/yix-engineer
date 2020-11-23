@@ -22,6 +22,8 @@ export default {
     },
     mounted () {
         let engineer = this.$refs.engineer
+        Vue.prototype.$i_engineer = engineer
+
         const RealComputerObject = Vue.extend( RealComputer )
         let computer = new RealComputerObject()
         engineer.initMainDomain( computer )

@@ -2,21 +2,23 @@
   <div class="d-view">
     <el-table
       size="mini"
-      :highlight-current-row="true"
-      :data="tableData"
-      :show-header="true">
+      :strip="true"
+      :data="tableData">
       <el-table-column
         prop="name"
+        label="名称"
         width="auto">
       </el-table-column>
       <el-table-column
         prop="type"
+        label="类型"
         width="auto">
       </el-table-column>
       <el-table-column
         prop="value">
         <template slot-scope="scope" v-if="editable">
           <el-input
+            size="mini"
             v-model="scope.row.value"
             clearable>
           </el-input>
@@ -31,8 +33,11 @@
 export default {
     name: 'DataView',
     props: {
-        tableData: Object,
-        editable: Boolean,
+        tableData: Array,
+        editable: {
+            type: Boolean,
+            default: true
+        }
     },
     data() {
         return {
@@ -45,6 +50,7 @@ export default {
         },
     },
     mounted() {
+        this.tableData2 = this.tableData
     },
     methods: {
     }
