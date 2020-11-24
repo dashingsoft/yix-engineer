@@ -357,7 +357,7 @@ export default {
 
         onEventEngineer ( action, obj, arg ) {
             if ( action === 'click' ) {
-                this.$emit( 'domain', 'select', obj )
+                this.$emit( 'domain', 'select', obj === this.currentDomain ? null : obj )
             }
             else if ( action === 'dblclick' ) {
                 console.log( 'dblclick ' + arg )

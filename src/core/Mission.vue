@@ -1,7 +1,7 @@
 <template>
   <div class="y-cover fx-center">
     <el-card class="y-page">
-        <div style="margin: 0; width: 100%; height: 16px">
+        <div style="margin: 0; width: 100%; height: 16px; z-index: 1">
           <el-button style="float:right; border: 0; margin: 2px 16px"
                      size="medium"
                      icon="el-icon-close"

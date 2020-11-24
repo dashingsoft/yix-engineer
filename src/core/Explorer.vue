@@ -18,22 +18,43 @@
           <div class="minibar">
             <el-button
               size="mini"
-              icon="el-icon-turn-off"
+              icon="el-icon-view"
               type="text"
-              title="显示/隐藏视图"
-              @click="handleEdit(scope.$index, scope.row)"></el-button>
-            <el-button
-              size="mini"
-              icon="el-icon-delete"
-              type="text"
-              title="删除空间"
-              @click="handleDelete(scope.$index, scope.row)"></el-button>
+              title="切换视图模式"
+              @click="handleItemViews(scope.$index, scope.row)"></el-button>
             <el-button
               size="mini"
               icon="el-icon-edit"
               type="text"
               title="修改空间属性"
-              @click="handleEdit(scope.$index, scope.row)"></el-button>
+              @click="handleItemEdit(scope.$index, scope.row)"></el-button>
+              <el-dropdown
+                trigger="hover"
+                size="mini"
+                @command="handleItemCommand">
+                <el-button
+                  size="mini"
+                  type="text"
+                  class="el-icon-more">
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item
+                    icon="el-icon-zoom-in"
+                    :command="{ action: 'zoomin', item: scope.row }">
+                    放大
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    icon="el-icon-zoom-out"
+                    :command="{ action: 'zoomout', item: scope.row }">
+                    缩小
+                  </el-dropdown-item>
+                  <el-dropdown-item
+                    icon="el-icon-delete"
+                    :command="{ action: 'delete', item: scope.row }">
+                    删除
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
           </div>
         </template>
       </el-table-column>
@@ -81,13 +102,21 @@ export default {
             }
         },
 
-        handleEdit ( index, obj ) {
-            console.log( index + obj.title )
+        handleItemEdit ( index, obj ) {
             this.$emit( 'domain', 'edit', obj )
         },
 
-        handleDelete ( index, obj ) {
+        handleItemViews ( index, obj ) {
             console.log( index + obj.title )
+        },
+
+        handleItemCommand ( cmd ) {
+            if ( cmd.name === 'zoom' ) {
+                console.log( 'zoom ' + cmd.row.title )
+            }
+            else if ( cmd.name === 'delete' ) {
+                console.log( 'delete ' + cmd.row.title )
+            }
         },
 
     }
@@ -110,11 +139,11 @@ export default {
     opacity: 1;
 }
 
-.y-explorer .minibar > .el-button {
+.y-explorer .minibar .el-button {
     margin-left: 20px;
 }
 
-.y-explorer .minibar  i.el-icon-delete {
+i.el-icon-delete {
     color: #F56C6C;
 }
 
