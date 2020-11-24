@@ -6,6 +6,8 @@ export default {
 
     data () {
         return {
+            // 绑定的 scene ，用来在 Imager 中显示
+            scene: undefined,
         }
     },
 
@@ -17,13 +19,13 @@ export default {
     methods: {
 
         onEventClick ( e ) {
-            this.basestone.$root.$emit( 'engineer', 'click', this.basestone, e )
+            this.basestone.notifyEngineer( 'click', this.basestone, e )
             // e.preventDefault()
             e.stopPropagation()
         },
 
         onEventDoubleClick ( e ) {
-            this.basestone.$root.$emit( 'engineer', 'dblclick', this.basestone, e )
+            this.basestone.notifyEngineer( 'dblclick', this.basestone, e )
             // e.preventDefault()
             e.stopPropagation()
         },

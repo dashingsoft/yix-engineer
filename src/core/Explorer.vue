@@ -1,12 +1,26 @@
 <template>
   <div class="y-explorer">
+    <div class="x-header">
+      <el-button
+        size="mini"
+        @click="activeLayer = 0"
+        :class="{ selected: activeLayer === 0 }">
+        物理层</el-button>
+      <el-button
+        size="mini"
+        @click="activeLayer = 1"
+        :class="{ selected: activeLayer === 1 }">
+        文明层</el-button>
+    </div>
     <el-table
+      v-show="activeLayer === 0"
       size="mini"
       row-key="_uid"
       ref="table"
+      :show-header="false"
+      :default-expand-all="true"
       :highlight-current-row="true"
       :data="tableData"
-      :show-header="false"
       @current-change="onCurrentChanged"
       :tree-props="{children: '$children'}">
       <el-table-column
@@ -28,33 +42,35 @@
               type="text"
               title="修改空间属性"
               @click="handleItemEdit(scope.$index, scope.row)"></el-button>
-              <el-dropdown
-                trigger="hover"
+            <el-dropdown
+              trigger="hover"
+              size="mini"
+              @command="handleItemCommand">
+              <el-button
                 size="mini"
-                @command="handleItemCommand">
-                <el-button
-                  size="mini"
-                  type="text"
-                  class="el-icon-more">
-                </el-button>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item
-                    icon="el-icon-zoom-in"
-                    :command="{ action: 'zoomin', item: scope.row }">
-                    放大
-                  </el-dropdown-item>
-                  <el-dropdown-item
-                    icon="el-icon-zoom-out"
-                    :command="{ action: 'zoomout', item: scope.row }">
-                    缩小
-                  </el-dropdown-item>
-                  <el-dropdown-item
-                    icon="el-icon-delete"
-                    :command="{ action: 'delete', item: scope.row }">
-                    删除
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
+                type="text"
+                class="el-icon-more">
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  icon="el-icon-check">
+                  当前视图
+                </el-dropdown-item>
+                <el-dropdown-item
+                  icon="el-icon-view"
+                  v-for="vv in scope.row.viewstack"
+                  :key="vv._uid"
+                  :command="{ action: 'toggle', item: vv }">
+                  {{ vv.title }}
+                </el-dropdown-item>
+                <el-dropdown-item divided></el-dropdown-item>
+                <el-dropdown-item
+                  icon="el-icon-delete"
+                  :command="{ action: 'delete', item: scope.row }">
+                  删除
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
         </template>
       </el-table-column>
@@ -63,7 +79,6 @@
 </template>
 
 <script>
-// import CoreView from "./View.vue"
 
 export default {
     name: 'ExplorerView',
@@ -76,6 +91,7 @@ export default {
         return {
             title: '域空间管理器',
             currentRow: null,
+            activeLayer: 0,
         }
     },
 
@@ -90,7 +106,8 @@ export default {
         onCurrentChanged ( row, oldRow ) {
             if ( oldRow )
                 oldRow.$el.classList.remove( 'i-selected' )
-            row.$el.classList.add( 'i-selected' )
+            if ( row )
+                row.$el.classList.add( 'i-selected' )
             this.currentRow = row
             this.$emit( 'domain', 'select', row, oldRow )
         },
@@ -129,6 +146,24 @@ export default {
 .y-explorer {
     border: 1px #DCDFE6 solid;
     height: 100%;
+}
+
+.y-explorer .x-header {
+    display: flex;
+}
+
+.y-explorer .x-header > * {
+    flex-grow: 1;
+}
+
+.y-explorer .x-header button {
+    margin-left: 0;
+    border-radius: 0;
+    border-width: 0.5px;
+}
+
+.y-explorer .x-header button.selected {
+    background-color: #EBEEF5;
 }
 
 .y-explorer .minibar {

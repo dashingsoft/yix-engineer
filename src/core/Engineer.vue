@@ -1,32 +1,22 @@
 <template>
   <div class="y-engineer">
-    <CoreView :title="title" v-show="isNormalMode">
+    <CoreView
+      @page="onEventPage"
+      @living="onEventLiving"
+      :title="title"
+      v-show="isNormalMode">
       <template v-slot:toolbar>
         <el-button
           size="mini"
-          title="创建"
-          @click="$emit( 'page', 'forge' )"
-          icon="el-icon-plus"></el-button>
+          title="缩略图模式"
+          :class="{ 'x-checked': runOptions.overlayMode }"
+          @click="$emit( 'view', 'overlay' )"
+          icon="el-icon-news"></el-button>
         <el-button
           size="mini"
-          title="动画演示"
-          @click="$emit( 'living', 'start' )"
-          icon="el-icon-video-camera"></el-button>
-        <el-button
-          size="mini"
-          title="学习研究"
-          @click="$emit( 'page', 'learning' )"
-          icon="el-icon-reading"></el-button>
-        <el-button
-          size="mini"
-          title="目标设定"
-          @click="$emit( 'page', 'mission' )"
-          icon="el-icon-alarm-clock"></el-button>
-        <el-button
-          size="mini"
-          title="选项设置"
-          @click="$emit( 'page', 'settings' )"
-          icon="el-icon-setting"></el-button>
+          title="关联视图模式"
+          @click="$emit( 'view', 'stack' )"
+          icon="el-icon-copy-document"></el-button>
       </template>
       <template v-slot:body>
         <div class="v-left" v-bind:style="{ width: sidebar.width + 'px' }">
@@ -40,7 +30,7 @@
       </template>
     </CoreView>
     <CoreImager
-      :viewsets="viewsets"
+      :layouts="layouts"
       ref="imager"></CoreImager>
     <Livingbar
       :state="state"
@@ -62,10 +52,14 @@
         v-if="pageVisible.material"
         :target-object="currentDomain"
         @page="onEventPage"></MaterialPage>
-      <LayoutBox
+      <LayoutPage
         v-if="pageVisible.layout"
         @page="onEventPage"
-        :viewsets="viewsets"></LayoutBox>
+        :layouts="layouts"></LayoutPage>
+      <ScenesPage
+        v-if="pageVisible.scenes"
+        @page="onEventPage"
+        :scenes="imager.scenes"></ScenesPage>
       <StartPage
         :title="title"
         action="start"
@@ -91,10 +85,13 @@ import MissionPage from './Mission.vue'
 import ForgePage from './Forge.vue'
 import LearningPage from './Learning.vue'
 import StartPage from './Start.vue'
+import LayoutPage from './Layout.vue'
+import ScenesPage from './Scenes.vue'
 
 import Livingbar from './Livingbar.vue'
-import LayoutBox from './Layout.vue'
 import CoreImager from './Imager.vue'
+
+import Layout from './Layout.js'
 
 
 const MODE = {
@@ -126,8 +123,9 @@ export default {
         MissionPage,
         StartPage,
         MaterialPage,
+        LayoutPage,
+        ScenesPage,
 
-        LayoutBox,
         Livingbar,
         CoreImager
     },
@@ -176,13 +174,14 @@ export default {
             frameStack: [],
 
             // 视图，每一个视图都是一个或者多个视图的集合
-            viewsets: [],
+            layouts: [],
 
             // 使命和目标
             missions: [],
 
             runOptions: {
                 fullScreen: false,
+                overlayMode: true,
                 runSpeed: 1,
                 runLevel: 1,
                 animation: true,
@@ -207,13 +206,17 @@ export default {
                 start: false,
                 settings: false,
                 material: false,
+                scenes: false,
             },
 
             // 资源管理器宽度和位置
             sidebar: {
                 width: 300,
                 top: 50,
-            }
+            },
+
+            // 不同视窗的大小
+            viewRects: [ {}, {}, {} ],
         }
     },
 
@@ -224,21 +227,18 @@ export default {
     },
 
     mounted () {
-        // 调用插件的初始化
         for ( let i = 0; i < this.plugins.length; i ++ )
             this.plugins[ i ].init( this )
 
         this.explorer = this.$refs.explorer
-
-        // 初始化 Imager
         this.imager = this.$refs.imager
+
         this.onWindowResize()
-
-        // 初始化布局
-        this.onLayoutAdd()
-
-        // 初始化快捷键
         window.addEventListener( 'resize', this.onWindowResize, false )
+
+        let rect = this.viewRects[ this.mode ]
+        this.layouts.push( new Layout( rect.width, rect.height ) )
+
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
         } )
@@ -246,6 +246,7 @@ export default {
         this.$on( 'living', this.onEventLiving )
         this.$on( 'page', this.onEventPage )
         this.$on( 'domain', this.onEventDomain )
+        this.$on( 'view', this.onEventView )
     },
 
     methods: {
@@ -281,18 +282,35 @@ export default {
             if ( ! this.imager )
                 return
 
-            let rect = this.$el.getBoundingClientRect()
-            let width = window.innerWidth - rect.left
-            let height = window.innerHeight - rect.top
+            let rect = this.viewRects[ this.mode ]
+            this.imager.translate( rect.left, rect.top )
+            this.imager.resize( rect.width, rect.height )
+        },
 
-            if ( this.mode === MODE.Normal ) {
-                this.imager.translate( this.sidebar.width, this.sidebar.top )
-                this.imager.resize( width - this.sidebar.width, height - this.sidebar.top )
-            }
-            else {
-                this.imager.translate( 0, 0 )
-                this.imager.resize( width, height )
-            }
+        onWindowResize () {
+            let rect = this.$el.getBoundingClientRect()
+            let width = Math.round( window.innerWidth - rect.left )
+            let height = Math.round( window.innerHeight - rect.top )
+
+            this.sidebar.top = Math.round(
+                this.$el.querySelector( '.v-left' ).getBoundingClientRect().top )
+
+            this.viewRects[ MODE.Normal ].left = this.sidebar.width
+            this.viewRects[ MODE.Normal ].top = this.sidebar.top
+            this.viewRects[ MODE.Normal ].width = width - this.sidebar.width
+            this.viewRects[ MODE.Normal ].height = height - this.sidebar.top
+
+            this.viewRects[ MODE.FullPage ].left = rect.left
+            this.viewRects[ MODE.FullPage ].top = rect.top
+            this.viewRects[ MODE.FullPage ].width = width
+            this.viewRects[ MODE.FullPage ].height = height
+
+            this.viewRects[ MODE.FullScreen ].left = 0
+            this.viewRects[ MODE.FullScreen ].top = 0
+            this.viewRects[ MODE.FullScreen ].width = window.innerWidth
+            this.viewRects[ MODE.FullScreen ].height = window.innerHeight
+
+            this.resetViewport()
         },
 
         onEventPage ( name, action ) {
@@ -328,6 +346,10 @@ export default {
                 this.pageVisible.material = false
             }
 
+            else if ( name === 'scenes' ) {
+                this.pageVisible.scenes = false
+            }
+
         },
 
         onEventLiving ( action, arg ) {
@@ -353,6 +375,11 @@ export default {
                 this.currentDomain = value
                 this.$emit( 'page', 'material' )
             }
+        },
+
+        onEventView ( action ) {
+            if ( action === 'overlay' )
+                this.runOptions.overlayMode = ! this.runOptions.overlayMode
         },
 
         onEventEngineer ( action, obj, arg ) {
@@ -394,46 +421,6 @@ export default {
 
         },
 
-        onWindowResize () {
-            this.sidebar.top = this.$el.querySelector( '.v-left' ).getBoundingClientRect().top
-            this.resetViewport()
-        },
-
-        onLayoutAdd () {
-            const element = document.createElement( 'div' )
-            let viewset = {
-                inactive: false,
-                element: element,
-                image: '',
-                scenes: []
-            }
-            this.imager.$el.appendChild( element )
-            this.viewsets.push( viewset )
-        },
-
-        onLayoutSelect ( index ) {
-            this.viewsets.forEach( item => item.inactive = true )
-            this.viewsets[ index ].inactive = false
-        },
-
-        onLayoutRemove ( index ) {
-            let item = this.viewsets.splice( index, 1 )
-            this.imager.$el.removeChild( item.element )
-            for ( let i = 0; i < item.scenes.length; i ++ ) {
-                let scene = item.scenes[ i ]
-                scene.userData.camera.dispose()
-                scene.userData.renderer.dispose()
-                scene.userData.control.dispose()
-                scene.userData.source.destroy()
-                scene.dispose()
-            }
-            if ( ! item.inactive ) {
-                if ( ! this.viewsets.length )
-                    this.onLayoutAdd()
-                this.onLayoutSelect( 0 )
-            }
-        },
-
         onKeyup ( e ) {
             console.log ( 'Press ' + e.code )
             if ( this.state === MODE.Ready ) {
@@ -469,100 +456,6 @@ export default {
     height: 100%;
 }
 
-.y-engineer .actionbar {
-    position: absolute;
-    top: 6px;
-    left: 0;
-    right: 0;
-    z-index: 10;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.y-engineer .actionbar > * {
-    margin-right: 9px;
-}
-
-.y-engineer .actionbar img {
-    width: 1em;
-    height: 1em;
-}
-
-.y-engineer .actionbar button {
-    border: 0;
-    background: #F0F0F0;
-}
-
-.y-engineer .layoutbar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    z-index: 20;
-
-    display: flex;
-    justify-content: center;
-    align-items: strech;
-
-    padding: 16px;
-    background: #909399;
-}
-
-.y-engineer .layoutbar > div {
-    position: relative;
-    width: 160px;
-    margin-right: 32px;
-    text-align: center;
-    border: 1px #DCDFE6 solid;
-    background-size: cover;
-    background-image: linear-gradient(to bottom, rgba(240,240,220,0.5), rgba(150,152,162,0.8))
-}
-
-.y-engineer .layoutbar .toolbox {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    opacity: 0;
-}
-
-.y-engineer .layoutbar .toolbox:hover {
-    opacity: 1;
-}
-
-.y-engineer .layoutbar button {
-    border: 0;
-    padding: 9px 16px;
-}
-
-.y-engineer .layoutbar img {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.y-engineer .layoutbar .el-button img {
-    width: 1em;
-    height: 1em;
-}
-
-.y-engineer .layoutbar .el-icon-plus {
-    padding: 32px;
-    font-size: 2em;
-    color: rgba(48, 48, 48, .3);
-}
-
-.y-engineer .layoutbar .el-button.el-button--text {
-    float: right;
-}
-
 .y-engineer .y-view {
     display: flex;
     flex-direction: column;
@@ -595,6 +488,10 @@ export default {
 
 .i-selected {
     outline: thick outset pink;
+}
+
+.x-checked i {
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 255, .2);
 }
 
 </style>

@@ -6,8 +6,7 @@
 import * as THREE from 'three'
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
-import { MapControls as Controls } from 'three/examples/jsm/controls/OrbitControls.js'
-// import { Controls } from './Controls.js'
+import { MapControls as Controls } from './Controls.js'
 
 let idleScene, idleCamera, idleControl
 let renderer1, renderer2
@@ -17,11 +16,13 @@ export default {
     name: 'CoreImager',
 
     props: {
-        viewsets: Array,
+        layouts: Array,
     },
 
     data() {
         return {
+            scenes: [],
+
             relScene: null,
             relCamera: null,
 
@@ -42,11 +43,12 @@ export default {
     },
 
     computed: {
-        currentViewset () {
-            for ( let i = 0; i < this.viewsets.length; i ++ )
-                if ( ! this.viewsets[ i ].inactive )
-                    return this.viewsets[ i ]
-            return { scenes: [] }
+        currentLayout () {
+            for ( let i = 0; i < this.layouts.length; i ++ )
+                if ( ! this.layouts[ i ].inactive )
+                    return this.layouts[ i ]
+            // Unreachable
+            return null
         }
     },
 
@@ -91,7 +93,6 @@ export default {
         idleControl = new Controls( idleCamera, document.body );
         idleControl.enableDamping = true;
         idleControl.dampingFactor = 0.05;
-        idleControl.screenSpacePanning = false;
         idleControl.minDistance = 100;
         idleControl.maxDistance = 1000;
         idleControl.maxPolarAngle = Math.PI / 2;
@@ -115,9 +116,9 @@ export default {
             renderer1.setSize( width, height )
             renderer2.setSize( width, height )
 
-            this.currentViewset.scenes.forEach ( scene => {
-                scene.userData.camera.aspect = aspect
-                scene.userData.renderer.setSize( width, height )
+            // 修改 Layout 里面的所有 viewport
+            this.layouts.forEach ( layout => {
+                layout.setSize( width, height )
             } )
 
             this.$el.style.width = width + 'px'
@@ -149,10 +150,12 @@ export default {
                 renderer2.render( idleScene, idleCamera )
             }
 
-            this.currentViewset.scenes.forEach ( scene => {
-                scene.userData.control.update()
-                scene.userData.renderer.render( scene, scene.userData.camera )
-            } )
+            if ( this.currentLayout )
+                this.currentLayout.viewports.forEach ( viewport => {
+                    let scene = viewport.scene
+                    scene.userData.control.update()
+                    scene.userData.renderer.render( scene, scene.userData.camera )
+                } )
 
         },
 
@@ -192,46 +195,61 @@ export default {
             }
         },
 
-        onEventWatch ( obj ) {
-            let v = new CSS3DObject( obj.$el )
-            let camera = new THREE.PerspectiveCamera( 45, this.width / this.height, 1, 1000 )
+        onEventWatch ( obj, rect ) {
+            let scene = obj.scene
+            if ( ! rect )
+                rect = {
+                    left: 0,
+                    top: 0,
+                    width: this.width,
+                    height: this.height
+                }
+            if ( ! scene )
+                scene = this.createObjectScene( obj, rect )
+            this.currentLayout.addScene( scene, rect )
+          },
+
+        createObjectScene ( obj, rect ) {
+            let width = rect === undefined ? this.width : rect.width
+            let height = rect === undefined ? this.height : rect.height
+            let camera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
             let scene = new THREE.Scene()
 
-            scene.add( v )
+            scene.add( new CSS3DObject( obj.$el ) )
             scene.background = new THREE.Color( 0xf0f0f0 )
 
-            let rect = {
-                left: 0,
-                top: 0,
-                width: this.width,
-                height: this.height
-            }
-            let margin = 10
+            let margin = 0
             let d = Math.max( obj.width / ( rect.width / 2 - margin ) * this.width / 2,
                               obj.height / ( rect.height / 2 - margin ) * this.height / 2 )
+            let d1 = Math.min( obj.width / rect.width * this.width,
+                               obj.height / rect.height * this.height )
+            let d2 = Math.max( obj.width / rect.width * this.width * 10,
+                               obj.height / rect.height * this.height * 10 )
             camera.position.set( 0, 0, d )
+            console.log( 'd is ' + d + ', d1 is ' + d1 + ', d2 is ' + d2 )
 
-            let renderer = new CSS3DRenderer();
+            let renderer = new CSS3DRenderer()
             renderer.setSize( rect.width, rect.height )
             renderer.domElement.style.position = 'absolute'
             renderer.domElement.style.left = rect.left + 'px'
             renderer.domElement.style.top = rect.top + 'px'
-            this.currentViewset.element.appendChild( renderer.domElement )
+            this.$el.appendChild( renderer.domElement )
 
             let control = new Controls( camera, renderer.domElement )
             control.enableDamping = true;
-            control.dampingFactor = 0.05;
-            control.screenSpacePanning = false;
-            control.minDistance = 100;
-            control.maxDistance = 1000;
-            control.maxPolarAngle = Math.PI / 2;
+            control.minDistance = d1
+            control.maxDistance = d2
 
             scene.userData.source = obj
             scene.userData.camera = camera
             scene.userData.control = control
             scene.userData.renderer = renderer
+            scene.userData.element = renderer.domElement
 
-            this.currentViewset.scenes.push( scene )
+            obj.scene = scene
+            this.scenes.push( scene )
+
+            return scene
         },
 
         onEventMap ( relations ) {

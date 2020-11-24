@@ -4,33 +4,56 @@
     v-show="visible">
 
     <div class="titlebar">
+      <!-- <el-button -->
+      <!--   size="mini" -->
+      <!--   title="关闭视图" -->
+      <!--   @click="toggleView" -->
+      <!--   icon="el-icon-close"></el-button> -->
       <el-button
         size="mini"
-        title="关闭视图"
-        @click="toggleView"
-        icon="el-icon-close"></el-button>
+        title="YIX">
+        <img src="../assets/yix-logo.png" style="width: 1rem">
+      </el-button>
       <span>{{ title }}</span>
       <div class="toolbox">
-        <slot name="toolbar"></slot>
         <el-button
           size="mini"
-          title="缩略图模式"
-          icon="el-icon-news"></el-button>
+          title="创建"
+          @click="$emit( 'page', 'forge' )"
+          icon="el-icon-plus"></el-button>
         <el-button
           size="mini"
-          title="关联视图模式"
-          icon="el-icon-copy-document"></el-button>
-        <el-dropdown @command="handleCommand">
-          <el-button
-            size="mini"
-            class="el-icon-more el-dropdown-link">
-          </el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="activate">设为活动视图</el-dropdown-item>
-            <el-dropdown-item command="relate">选择关联视图</el-dropdown-item>
-            <el-dropdown-item command="all">显示所有视图</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+          title="动画演示"
+          @click="$emit( 'living', 'start' )"
+          icon="el-icon-video-camera"></el-button>
+        <el-button
+          size="mini"
+          title="学习研究"
+          @click="$emit( 'page', 'learning' )"
+          icon="el-icon-reading"></el-button>
+        <el-button
+          size="mini"
+          title="目标设定"
+          @click="$emit( 'page', 'mission' )"
+          icon="el-icon-alarm-clock"></el-button>
+        <el-button
+          size="mini"
+          title="选项设置"
+          @click="$emit( 'page', 'settings' )"
+          icon="el-icon-setting"></el-button>
+        <slot name="toolbar">
+          <el-dropdown @command="handleCommand">
+            <el-button
+              size="mini"
+              class="el-icon-more el-dropdown-link">
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="activate">设为活动视图</el-dropdown-item>
+              <el-dropdown-item command="relate">选择关联视图</el-dropdown-item>
+              <el-dropdown-item command="all">显示所有视图</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </slot>
       </div>
     </div>
 
