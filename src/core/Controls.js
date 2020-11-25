@@ -379,7 +379,7 @@ var OrbitControls = function ( object, domElement ) {
         var v = new Vector3();
 
         return function panUp( distance, objectMatrix ) {
-            console.log( '    scope.screenSpacePanning is ' +    scope.screenSpacePanning)
+
             if ( scope.screenSpacePanning === true ) {
 
                 v.setFromMatrixColumn( objectMatrix, 1 );

@@ -1,6 +1,8 @@
 <template>
-  <div class="v-computer">
-    {{ title }}
+  <div class="v-computer i-view">
+    <div>这是一个测试
+      {{ title }}
+    </div>
   </div>
 </template>
 

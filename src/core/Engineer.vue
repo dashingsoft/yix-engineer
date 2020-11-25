@@ -22,6 +22,7 @@
         <div class="v-left" v-bind:style="{ width: sidebar.width + 'px' }">
           <ExplorerView
             ref="explorer"
+            @layer="onEventLayer"
             @domain="onEventDomain"
             :main-domain="mainDomain"></ExplorerView>
         </div>
@@ -179,6 +180,7 @@ export default {
 
             // 视图，每一个视图都是一个或者多个视图的集合
             layouts: [],
+            overlayLayout: null,
 
             // 使命和目标
             missions: [],
@@ -242,6 +244,8 @@ export default {
 
         let rect = this.viewRects[ this.mode ]
         this.layouts.push( new Layout( rect.width, rect.height ) )
+        this.overlayLayout = new Layout( rect.width, rect.height )
+        this.imager.overlayLayout = this.overlayLayout
 
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
@@ -250,6 +254,7 @@ export default {
         this.$on( 'living', this.onEventLiving )
         this.$on( 'page', this.onEventPage )
         this.$on( 'domain', this.onEventDomain )
+        this.$on( 'layer', this.onEventLayer )
         this.$on( 'view', this.onEventView )
     },
 
@@ -265,8 +270,8 @@ export default {
 
             this.state = STATE.Ready
 
-            this.imager.$emit( 'watch', this.mainDomain )
-            this.imager.$emit( 'busy', true )
+            this.imager.watchObject( this.mainDomain )
+            this.imager.toggleBusy( true )
         },
 
         startMainDomain () {
@@ -447,16 +452,25 @@ export default {
 
         },
 
-        onEventDomain( action, value ) {
+        onEventDomain ( action, value ) {
             if ( action === 'select' ) {
                 this.currentDomain = value
-                this.explorer.setCurrentDomain( value )
             }
 
             else if ( action === 'edit' ) {
                 this.currentDomain = value
                 this.$emit( 'page', 'material' )
             }
+        },
+
+        onEventLayer ( action, value, oldValue ) {
+
+            if ( action === 'select' ) {
+                // this.currentLayout.hideScene( oldValue )
+                console.log( oldValue.title )
+                this.imager.watchObject( value )
+            }
+
         },
 
         onEventView ( action ) {
@@ -466,7 +480,7 @@ export default {
 
         onEventEngineer ( action, obj, arg ) {
             if ( action === 'click' ) {
-                this.$emit( 'domain', 'select', obj === this.currentDomain ? null : obj )
+                this.explorer.setCurrentDomain( obj === this.currentDomain ? null : obj )
             }
             else if ( action === 'dblclick' ) {
                 console.log( 'dblclick ' + arg )

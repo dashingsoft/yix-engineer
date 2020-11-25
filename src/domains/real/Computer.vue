@@ -119,7 +119,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
 .real-board {
     position: absolute;
     border: 1px solid #E4E7ED;

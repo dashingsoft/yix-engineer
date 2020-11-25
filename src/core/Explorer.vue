@@ -3,17 +3,16 @@
     <div class="x-header">
       <el-button
         size="mini"
-        @click="activeLayer = 0"
+        @click="currentLayer = 0"
         :class="{ selected: activeLayer === 0 }">
         物理层</el-button>
       <el-button
         size="mini"
-        @click="activeLayer = 1"
+        @click="currentLayer = 1"
         :class="{ selected: activeLayer === 1 }">
         文明层</el-button>
     </div>
     <el-table
-      v-show="activeLayer === 0"
       size="mini"
       row-key="_uid"
       ref="table"
@@ -34,71 +33,8 @@
               size="mini"
               icon="el-icon-view"
               type="text"
-              title="切换视图模式"
-              @click="handleItemViews(scope.$index, scope.row)"></el-button>
-            <el-button
-              size="mini"
-              icon="el-icon-edit"
-              type="text"
-              title="修改空间属性"
-              @click="handleItemEdit(scope.$index, scope.row)"></el-button>
-            <el-dropdown
-              trigger="hover"
-              size="mini"
-              @command="handleItemCommand">
-              <el-button
-                size="mini"
-                type="text"
-                class="el-icon-more">
-              </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item
-                  icon="el-icon-check">
-                  当前视图
-                </el-dropdown-item>
-                <el-dropdown-item
-                  icon="el-icon-view"
-                  v-for="vv in scope.row.viewStack"
-                  :key="vv._uid"
-                  :command="{ action: 'toggle', item: vv }">
-                  {{ vv.title }}
-                </el-dropdown-item>
-                <el-dropdown-item divided></el-dropdown-item>
-                <el-dropdown-item
-                  icon="el-icon-delete"
-                  :command="{ action: 'delete', item: scope.row }">
-                  删除
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-          </div>
-        </template>
-      </el-table-column>
-    </el-table>
-    <el-table
-      v-show="activeLayer === 1"
-      size="mini"
-      row-key="_uid"
-      ref="table"
-      :show-header="false"
-      :default-expand-all="true"
-      :highlight-current-row="true"
-      :data="tableData2"
-      @current-change="onCurrentChanged"
-      :tree-props="{children: '$children'}">
-      <el-table-column
-        prop="title"
-        width="auto">
-      </el-table-column>
-      <el-table-column align="right">
-        <template slot-scope="scope">
-          <div class="minibar">
-            <el-button
-              size="mini"
-              icon="el-icon-view"
-              type="text"
-              title="切换视图模式"
-              @click="handleItemViews(scope.$index, scope.row)"></el-button>
+              title="显示详细视图"
+              @click="handleItemView(scope.$index, scope.row)"></el-button>
             <el-button
               size="mini"
               icon="el-icon-edit"
@@ -153,19 +89,37 @@ export default {
     data() {
         return {
             title: '域空间管理器',
-            currentRow: null,
+            currentRows: [ undefined, undefined ],
             activeLayer: 0,
         }
     },
 
     computed: {
         tableData () {
-            return this.mainDomain === null ? [] : [ this.mainDomain ]
+            return ( this.activeLayer === 0 )
+                ?  ( this.mainDomain === null ? [] : [ this.mainDomain ] )
+                :  ( ( this.mainDomain === null || this.mainDomain.mapStack.length === 0 )
+                     ? [] : [ this.mainDomain.mapStack[ 0 ] ] )
         },
-        tableData2 () {
-            return ( this.mainDomain === null || this.mainDomain.mapStack.length === 0 )
-                ? [] : [ this.mainDomain.mapStack[ 0 ] ]
-        }
+        currentRow: {
+            get () {
+                return this.currentRows[ this.activeLayer ]
+            },
+            set ( value ) {
+                this.currentRows[ this.activeLayer ] = value
+            }
+        },
+        currentLayer: {
+            get () {
+                return this.activeLayer
+            },
+            set ( value ) {
+                this.$nextTick( () => this.$refs.table.setCurrentRow( this.currentRow ) )
+                let oldValue = this.tableData[0]
+                this.activeLayer = value
+                this.$emit( 'layer', 'select', this.tableData[0], oldValue )
+            }
+        },
     },
 
     methods: {
@@ -180,17 +134,15 @@ export default {
         },
 
         setCurrentDomain ( row ) {
-            if ( this.currentRow !== row ) {
-                this.currentRow = row
-                this.$refs.table.setCurrentRow( row )
-            }
+            this.$refs.table.setCurrentRow( row )
+            this.onCurrentChanged( row, this.currentRow )
         },
 
         handleItemEdit ( index, obj ) {
             this.$emit( 'domain', 'edit', obj )
         },
 
-        handleItemViews ( index, obj ) {
+        handleItemView ( index, obj ) {
             console.log( index + obj.title )
         },
 

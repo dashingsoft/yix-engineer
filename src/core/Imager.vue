@@ -6,6 +6,7 @@
 import * as THREE from 'three'
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
+// import { CSS3DRenderer, CSS3DObject } from './CSS3DRenderer.js'
 import { MapControls as Controls } from './Controls.js'
 
 let idleScene, idleCamera, idleControl
@@ -25,11 +26,7 @@ export default {
             relScene: null,
             relCamera: null,
 
-            mapControl: null,
-
-            floatScene: null,
-            floatCamera: null,
-            floatControl: null,
+            overlayLayout: null,
 
             width: 800,
             height: 600,
@@ -53,9 +50,8 @@ export default {
 
     mounted() {
 
-        let rect = this.$el.getBoundingClientRect()
-        let width = window.innerWidth - rect.left
-        let height = window.innerHeight - rect.top
+        let width = this.width
+        let height = this.height
 
         this.width = width
         this.height = height
@@ -95,9 +91,6 @@ export default {
         idleControl.minDistance = 100;
         idleControl.maxDistance = 1000;
         idleControl.maxPolarAngle = Math.PI / 2;
-
-        this.$on( 'watch', this.onEventWatch )
-        this.$on( 'busy', this.onEventBusy )
 
         this.animate()
     },
@@ -140,7 +133,6 @@ export default {
         },
 
         render () {
-
             if ( this.relScene.visible )
                 renderer1.render( this.relScene, this.relCamera )
 
@@ -149,13 +141,15 @@ export default {
                 renderer2.render( idleScene, idleCamera )
             }
 
-            if ( this.currentLayout )
-                this.currentLayout.viewports.forEach ( viewport => {
-                    let scene = viewport.scene
-                    scene.userData.control.update()
-                    scene.userData.renderer.render( scene, scene.userData.camera )
-                } )
-
+            let layouts = [ this.currentLayout, this.overlayLayout ]
+            layouts.forEach( layout => {
+                if ( layout )
+                    this.currentLayout.viewports.forEach ( viewport => {
+                        let scene = viewport.scene
+                        scene.userData.control.update()
+                        scene.userData.renderer.render( scene, scene.userData.camera )
+                    } )
+            } )
         },
 
         reset () {
@@ -194,7 +188,14 @@ export default {
             }
         },
 
-        onEventWatch ( obj, rect ) {
+        toggleBusy ( value ) {
+            if ( value === undefined )
+                value = ! idleScene.visible
+            idleScene.visible =  value
+            renderer2.domElement.style.display = value ? 'none' : ''
+        },
+
+        watchObject ( obj, rect ) {
             let scene = obj.scene
             if ( ! rect )
                 rect = {
@@ -206,6 +207,10 @@ export default {
             if ( ! scene )
                 scene = this.createObjectScene( obj, rect )
             this.currentLayout.addScene( scene, rect )
+          },
+
+        unwatchObject ( obj ) {
+            this.removeObjectScene( obj )
           },
 
         createObjectScene ( obj, rect ) {
@@ -270,11 +275,6 @@ export default {
 
         onEventMap ( relations ) {
             this.relations = relations
-        },
-
-        onEventBusy ( value ) {
-            idleScene.visible =  ! value
-            renderer2.domElement.style.display = value ? 'none' : ''
         },
 
     }
