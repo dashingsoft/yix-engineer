@@ -1,13 +1,13 @@
 <template>
   <div class="y-layoutbox" @click="$emit( 'hide' )">
-    <div v-for="(item, index) in viewsets" :key="index"
+    <div v-for="(item, index) in layouts" :key="index"
          v-bind:style="{ backgroundImage: item.image }"
-         @click.stop="$emit( 'select', index )">
+         @click.stop="$emit( 'page', 'layout', 'select', index )">
       <el-button type="text" title="关闭" icon="el-icon-close"
-                 @click.stop="$emit( 'remove', index )"></el-button>
+                 @click.stop="$emit( 'page', 'layout', 'remove', index )"></el-button>
     </div>
     <div>
-      <div class="y-toolbox" v-show="false">
+      <div class="y-toolbox">
         <el-button type="info" title="简单视图" @click="$emit( 'add' )">
           <img src="../assets/square.svg"/></el-button>
         <el-button type="info" title="主从视图" @click="$emit( 'add' )">
@@ -15,7 +15,7 @@
         <el-button type="info" title="表格视图" @click="$emit( 'add' )">
           <img src="../assets/grid.svg"/></el-button>
       </div>
-      <div @click.stop="$emit( 'add' )">
+      <div @click.stop="$emit( 'page', 'layout', 'add' )">
         <i class="el-icon-plus"></i>
       </div>
     </div>
@@ -24,9 +24,6 @@
 
 <script>
 
-import Layout from './Layout.js'
-
-
 export default {
     name: 'LayoutPage',
 
@@ -34,40 +31,10 @@ export default {
         layouts: Array,
     },
 
-    mounted() {
+    mounted () {
     },
 
     methods: {
-        onLayoutAdd () {
-            this.layouts.push( new Layout() )
-        },
-
-        onLayoutSelect ( index ) {
-            this.layouts.forEach( layout => {
-                if ( layout.inactive )
-                    layout.deactive()
-            } )
-            this.layouts[ index ].active()
-        },
-
-        onLayoutRemove ( index ) {
-            let item = this.layouts.splice( index, 1 )
-            this.imager.$el.removeChild( item.element )
-            for ( let i = 0; i < item.scenes.length; i ++ ) {
-                let scene = item.scenes[ i ]
-                scene.userData.camera.dispose()
-                scene.userData.renderer.dispose()
-                scene.userData.control.dispose()
-                scene.userData.source.destroy()
-                scene.dispose()
-            }
-            if ( ! item.inactive ) {
-                if ( ! this.layouts.length )
-                    this.onLayoutAdd()
-                this.onLayoutSelect( 0 )
-            }
-        },
-
     }
 }
 

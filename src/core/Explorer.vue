@@ -58,7 +58,70 @@
                 </el-dropdown-item>
                 <el-dropdown-item
                   icon="el-icon-view"
-                  v-for="vv in scope.row.viewstack"
+                  v-for="vv in scope.row.viewStack"
+                  :key="vv._uid"
+                  :command="{ action: 'toggle', item: vv }">
+                  {{ vv.title }}
+                </el-dropdown-item>
+                <el-dropdown-item divided></el-dropdown-item>
+                <el-dropdown-item
+                  icon="el-icon-delete"
+                  :command="{ action: 'delete', item: scope.row }">
+                  删除
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-table
+      v-show="activeLayer === 1"
+      size="mini"
+      row-key="_uid"
+      ref="table"
+      :show-header="false"
+      :default-expand-all="true"
+      :highlight-current-row="true"
+      :data="tableData2"
+      @current-change="onCurrentChanged"
+      :tree-props="{children: '$children'}">
+      <el-table-column
+        prop="title"
+        width="auto">
+      </el-table-column>
+      <el-table-column align="right">
+        <template slot-scope="scope">
+          <div class="minibar">
+            <el-button
+              size="mini"
+              icon="el-icon-view"
+              type="text"
+              title="切换视图模式"
+              @click="handleItemViews(scope.$index, scope.row)"></el-button>
+            <el-button
+              size="mini"
+              icon="el-icon-edit"
+              type="text"
+              title="修改空间属性"
+              @click="handleItemEdit(scope.$index, scope.row)"></el-button>
+            <el-dropdown
+              trigger="hover"
+              size="mini"
+              @command="handleItemCommand">
+              <el-button
+                size="mini"
+                type="text"
+                class="el-icon-more">
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  icon="el-icon-check">
+                  当前视图
+                </el-dropdown-item>
+                <el-dropdown-item
+                  icon="el-icon-view"
+                  v-for="vv in scope.row.viewStack"
                   :key="vv._uid"
                   :command="{ action: 'toggle', item: vv }">
                   {{ vv.title }}
@@ -99,6 +162,10 @@ export default {
         tableData () {
             return this.mainDomain === null ? [] : [ this.mainDomain ]
         },
+        tableData2 () {
+            return ( this.mainDomain === null || this.mainDomain.mapStack.length === 0 )
+                ? [] : [ this.mainDomain.mapStack[ 0 ] ]
+        }
     },
 
     methods: {

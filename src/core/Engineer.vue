@@ -31,6 +31,7 @@
     </CoreView>
     <CoreImager
       :layouts="layouts"
+      :scenes="scenes"
       ref="imager"></CoreImager>
     <Livingbar
       :state="state"
@@ -59,7 +60,7 @@
       <ScenesPage
         v-if="pageVisible.scenes"
         @page="onEventPage"
-        :scenes="imager.scenes"></ScenesPage>
+        :scenes="scenes"></ScenesPage>
       <StartPage
         :title="title"
         action="start"
@@ -148,9 +149,12 @@ export default {
 
     data() {
         return {
-            imager: null,
             mainDomain: null,
             currentDomain: null,
+
+            // 域空间展示
+            imager: null,
+            scenes: [],
 
             // 域空间仓库，存放所有注册的域空间
             domainStore: [],
@@ -287,6 +291,60 @@ export default {
             this.imager.resize( rect.width, rect.height )
         },
 
+        createLayout () {
+            let rect = this.viewRects[ this.mode ]
+            this.layouts.push( new Layout( rect.width, rect.height ) )
+        },
+
+        selectLayout ( index ) {
+            this.layouts.forEach( layout => {
+                if ( layout.inactive )
+                    layout.hide()
+            } )
+            this.layouts[ index ].show()
+        },
+
+        removeLayout ( index ) {
+            let layout = this.layouts.splice( index, 1 )
+            if ( ! layout.inactive ) {
+                if ( ! this.layouts.length )
+                    this.createLayout()
+                this.selectLayout( 0 )
+            }
+        },
+
+        normalize () {
+            // 归一化处理，最重要的控制例程
+
+            if ( this.state !== STATE.Runing )
+                return;
+
+            this.timeCounter ++;
+
+            this.mainDomain.normalize()
+
+            while ( this.actionStack.length ) {
+                let action = this.actionStack.pop()
+                if ( action.isFinished() ) {
+                    if ( action.successor ) {
+                        let prev = this.actionStack.pop()
+                        prev.state = action.state
+                        this.actionStack.push( prev )
+                    }
+                }
+                else if ( action.isPending() ) {
+                    action.notify( 'run' )
+                    action.target.$emit( 'talk', action )
+                }
+                else if ( action.isRunning() )
+                    this.actionStack.push( action )
+            }
+
+            // while ( this.missions.length ) {
+            // }
+
+        },
+
         onWindowResize () {
             let rect = this.$el.getBoundingClientRect()
             let width = Math.round( window.innerWidth - rect.left )
@@ -311,6 +369,30 @@ export default {
             this.viewRects[ MODE.FullScreen ].height = window.innerHeight
 
             this.resetViewport()
+        },
+
+        onKeyup ( e ) {
+            if ( this.state === MODE.Ready ) {
+                if ( e.code === 'Enter' )
+                    this.start()
+            }
+
+            else if ( e.code === 'Space' ) {
+                this.$emit( 'command', 'pause' )
+                if ( e.ctrlKey )
+                    this.$emit( 'page', 'scenes' )
+            }
+            else if ( e.code === 'Enter' ) {
+                this.$emit( 'command', 'enter', e.ctrlKey, e.altKey )
+            }
+            else if ( e.code === 'Escape' ) {
+                this.pageVisible.layout = false
+                this.pageVisible.scenes = false
+            }
+            else if ( e.code === 'Tab' ) {
+                if ( e.shiftKey )
+                    this.$emit( 'page', 'layout' )
+            }
         },
 
         onEventPage ( name, action ) {
@@ -391,58 +473,6 @@ export default {
             }
         },
 
-        normalize () {
-            if ( this.state !== STATE.Runing )
-                return;
-
-            this.timeCounter ++;
-
-            this.mainDomain.normalize()
-
-            while ( this.actionStack.length ) {
-                let action = this.actionStack.pop()
-                if ( action.isFinished() ) {
-                    if ( action.successor ) {
-                        let prev = this.actionStack.pop()
-                        prev.state = action.state
-                        this.actionStack.push( prev )
-                    }
-                }
-                else if ( action.isPending() ) {
-                    action.notify( 'run' )
-                    action.target.$emit( 'talk', action )
-                }
-                else if ( action.isRunning() )
-                    this.actionStack.push( action )
-            }
-
-            // while ( this.missions.length ) {
-            // }
-
-        },
-
-        onKeyup ( e ) {
-            console.log ( 'Press ' + e.code )
-            if ( this.state === MODE.Ready ) {
-                if ( e.code === 'Enter' )
-                    this.start()
-            }
-
-            else if ( e.code === 'Space' ) {
-                this.$emit( 'command', 'pause' )
-            }
-            else if ( e.code === 'Enter' ) {
-                this.$emit( 'command', 'enter', e.ctrlKey, e.altKey )
-            }
-            else if ( e.code === 'Escape' ) {
-                this.pageVisible.layout = false
-            }
-            else if ( e.code === 'Tab' ) {
-                if ( e.shiftKey )
-                    this.$emit( 'page', 'layout' )
-            }
-        },
-
     }
 }
 
@@ -491,7 +521,11 @@ export default {
 }
 
 .x-checked i {
-    box-shadow: 2px 2px 2px 1px rgba(0, 0, 255, .2);
+    box-shadow: 2px 2px 2px 1px #C0C4CC;
+}
+
+.i-view {
+    cursor: pointer;
 }
 
 </style>

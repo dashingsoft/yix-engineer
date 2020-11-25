@@ -17,12 +17,11 @@ export default {
 
     props: {
         layouts: Array,
+        scenes: Array,
     },
 
     data() {
         return {
-            scenes: [],
-
             relScene: null,
             relCamera: null,
 
@@ -226,7 +225,6 @@ export default {
             let d2 = Math.max( obj.width / rect.width * this.width * 10,
                                obj.height / rect.height * this.height * 10 )
             camera.position.set( 0, 0, d )
-            console.log( 'd is ' + d + ', d1 is ' + d1 + ', d2 is ' + d2 )
 
             let renderer = new CSS3DRenderer()
             renderer.setSize( rect.width, rect.height )
@@ -250,6 +248,24 @@ export default {
             this.scenes.push( scene )
 
             return scene
+        },
+
+        removeObjectScene ( obj ) {
+            let scene = obj.scene
+            if ( ! obj.scene )
+                return
+
+            let index = this.scenes.indexOf( scene )
+            if ( index > -1 )
+                this.scenes.splice( index, 1 )
+
+            this.layouts.forEach( layout => layout.removeScene( scene ) )
+
+            this.$el.removeChild( scene.element )
+            scene.userData.camera.dispose()
+            scene.userData.renderer.dispose()
+            scene.userData.control.dispose()
+            scene.dispose()
         },
 
         onEventMap ( relations ) {
