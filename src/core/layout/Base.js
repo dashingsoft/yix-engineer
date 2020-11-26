@@ -6,7 +6,6 @@ import { MapControls as Controls } from '../Controls.js'
 var BaseLayout = function ( width = 800, height = 600, options ) {
 
     let scope = this
-    let margin = options.margin === undefined ? 0 : options.margin
     let fov = options.fov === undefined ? 45 : options.fov
     let near = options.near === undefined ? 1 : options.near
     let far = options.far === undefined ? 10000 : options.far
@@ -26,8 +25,8 @@ var BaseLayout = function ( width = 800, height = 600, options ) {
     renderer.domElement.style.top = top + 'px'
     renderer.domElement.style.display = 'none'
 
-    if ( opt.container )
-        container.appendChild ( renderer.domElement )
+    if ( options.container )
+        options.container.appendChild ( renderer.domElement )
 
     let control = new Controls( camera, renderer.domElement )
     control.enableDamping = true;

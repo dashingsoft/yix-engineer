@@ -37,7 +37,6 @@ export default {
             width: 100,
             height: 100,
             resolution: 1.0,
-            position: [ 0, 0, 0 ]
         }
 
     },

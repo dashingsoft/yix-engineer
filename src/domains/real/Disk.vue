@@ -1,5 +1,5 @@
 <template>
-  <div class="i-part" v-bind:style="style">
+  <div class="i-part" v-bind:style="styleData">
   </div>
 </template>
 
@@ -21,14 +21,12 @@ export default {
     },
 
     computed: {
-        style () {
+        styleData () {
             return {
                 left: this.position[ 0 ] + 'px',
                 top: this.position[ 1 ] + 'px',
                 width: '60px',
                 height: '60px',
-                backgroundImage: 'url("../../assets/hdd.svg")',
-                backgroundSize: 'cover',
             }
         }
     },
@@ -57,4 +55,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.i-part {
+    background-image: url("../../assets/hdd.svg");
+    background-size: cover;
+}
 </style>

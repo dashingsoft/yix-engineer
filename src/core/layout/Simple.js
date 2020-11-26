@@ -2,8 +2,6 @@
 //
 //    当前界面只显示一个主视图
 //
-import * as THREE from 'three'
-
 import BaseLayout from './Base.js'
 
 const MODE = {
@@ -20,9 +18,11 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
     BaseLayout.call( this, width, height, options )
 
     let scope = this
+    let margin = options.margin === undefined ? 0 : options.margin
+
     let _mode = MODE.MASTER
     let _main = undefined
-    let _angle = Math.PI / 6
+    let _angle = Math.PI * 0
 
     // Property
 
@@ -34,7 +34,7 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
             _mode = ( value === MODE.MASTER - 1 ) ? MODE.COL2D
                 : ( value === MODE.COL2D + 1 ) ? MODE.MASTER
                 : value
-            scope.rearrange()
+            rearrange()
         }
     } )
 
@@ -44,7 +44,7 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
         },
         set( value ) {
             _angle = value
-            scope.rearrange()
+            rearrange()
         }
     } )
 
@@ -52,7 +52,7 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
 
     this.addItem = function ( domain, main ) {
         let item = scope.createObject3D( domain.$el )
-        item.visible = false
+        item.name = 'i-' + domain._uid
 
         let rect = domain.$el.getBoundingClientRect()
         if ( rect.width && rect.height ) {
@@ -69,13 +69,13 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
             item.userData.width = scope.width
             item.userData.height = scope.height
         }
-        item.userData.position = domain.position ? domain.position ? [ 0, 0, 0 ]
+        item.userData.position = [ 0, 0, 0 ]
 
-        if ( main ) {
+        if ( _main === undefined || main )
             _main = main
-            item.visible = true
-        }
+
         scope.scene.add ( item )
+        return item
     }
 
     this.removeItem = function ( item ) {
@@ -94,24 +94,51 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
         _main = item
     }
 
-    this.reset = function ( item ) {
+    this.reset = function () {
         rearrange()
+    }
+
+    this.watchMainDomain = function ( domain ) {
+        let item = getItem ( domain )
+
+        _main = item
+        scope.mode = MODE.MASTER
+    }
+
+    this.watchViewStack = function ( domain ) {
+        let items = []
+        items.push( getItem ( domain ) )
+        domain.viewStack.forEach ( v => items.push ( getItem ( v ) ) )
+        scope.scene.children.forEach ( child => child.visible = false )
+        showStackItems( items )
     }
 
     // Internal functions
 
+    function getItem ( domain ) {
+        let item = scope.scene.getObjectByName( 'i-' + domain._uid )
+        return  item ? item : scope.addItem( domain )
+    }
+
+    function calculateDistance ( vw, vh ) {
+        let mx = scope.width * ( scope.width / 2 - margin )
+        let my = scope.height * ( scope.height / 2 - margin )
+        let d = Math.max( mx / ( vw / 2 - margin), my / ( vh / 2 - margin ) )
+        let d1 = Math.min( mx / scope.width, my / scope.height)
+        let d2 = Math.max( mx / vw * 4, my / vh * 4 )
+        return [d, d1, d2]
+    }
+
     function showMasterItem ( item ) {
-        let width = item.userData.width
-        let height = item.userData.height
-        let d = Math.max( width / ( scope.width / 2 - margin ) * scope.width / 2,
-                          height / ( scope.height / 2 - margin ) * scope.height / 2 )
-        let d1 = Math.min( width, height )
-        let d2 = Math.max( width * 8, height * 8 )
         let pos = item.userData.position
+        let [ d, d1, d2 ] = calculateDistance( item.userData.width, item.userData.height )
+
+        scope.camera.lookAt( pos )
         scope.camera.position.set( pos[ 0 ], pos[ 1 ],  pos[ 2 ] + d )
         scope.control.minDistance = d1
         scope.control.maxDistance = d2
 
+        console.log( d, pos, d1, d2 )
         item.visible = true
     }
 
@@ -119,12 +146,7 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
         let n = items.length
         let w = scope.width / n
         let h = scope.height / n
-
-        let mw = scope.width * ( scope.width / 2 - margin )
-        let mh = scope.height * ( scope.height / 2 - margin )
-        let d = Math.max( mw / ( w / 2 - margin), mh / ( h / 2 - margin ) )
-        let d1 = Math.min( mw / scope.width, mh / scope.height)
-        let d2 = Math.max( mw / w / 8, mh / h / 8 )
+        let [ d, d1, d2 ] = calculateDistance( w, h )
 
         scope.camera.lookAt( 0, 0, 0 )
         scope.control.minDistance = d1
@@ -145,7 +167,8 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
             let z = - w / 2 + scope.width / 2
             items.forEach( item => {
                 item.visible = true
-                item.position.set( 0, 0, z )
+                item.position.set( 0, 0, z * 3 )
+                console.log( 'position at ' + z )
                 z -= dt
             } )
             scope.camera.position.set( d * Math.sin( scope.angle ), 0, d * Math.cos( scope.angle ) )
@@ -161,7 +184,7 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
             showMasterItem ( _main ? _main : scope.scene.children[ 0 ] )
         }
         else {
-            scope.scene.children.forEach ( child => child.visible = true )
+            scope.scene.children.forEach ( child => child.visible = false )
             showStackItems( scope.scene.children )
         }
 

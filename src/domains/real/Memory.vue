@@ -1,5 +1,5 @@
 <template>
-  <div class="memory">
+  <div class="i-part" v-bind:style="style">
   </div>
 </template>
 
@@ -17,12 +17,30 @@ import RealMemoryView2 from './MemoryView2.vue'
 
 export default {
     mixins: [ MixinDomain, MixinEntity ],
+
     name: 'RealMemory',
+
+    props: {
+        position: Array,
+    },
+
     data() {
         return {
             title: "内存",
         }
     },
+
+    computed: {
+        style () {
+            return {
+                left: this.position[ 0 ] + 'px',
+                top: this.position[ 1 ] + 'px',
+                width: '30px',
+                height: '30px',
+            }
+        }
+    },
+
     mounted() {
         let visualMemory = Vue.extend( VisualMemory )
         let memory = new visualMemory()
@@ -49,10 +67,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.memory {
-    width: 30px;
-    height: 30px;
-
+.i-part {
     background-image: url("../../assets/sim.svg");
     background-size: cover;
 }

@@ -21,6 +21,12 @@ var LayerLayout = function ( width = 800, height = 600, options ) {
         new SimpleLayout( width, height, options )
     ]
 
+    this.show = function () {
+        DIRECTION.HORIZON
+        layouts
+        scope
+    }
+
 }
 
 LayerLayout.prototype = Object.create( BaseLayout.prototype )

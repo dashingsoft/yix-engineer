@@ -26,6 +26,9 @@ var OverlayLayout = function ( width = 800, height = 600, location = 2 ) {
     SimpleLayout.call( this, width, height, options )
 
     scope.renderer.domElement.style.zIndex = 10
+
+    LOCATION.TOP
+    location
 }
 
 OverlayLayout.prototype = Object.create( SimpleLayout.prototype )

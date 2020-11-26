@@ -1,6 +1,6 @@
 <template>
-  <div class="i-view">
-    <div v-bind:style="{ width: width + 'px', height: height + 'px' }">
+  <div class="i-view" v-bind:style="{ width: width + 'px', height: height + 'px' }">
+    <div>
       <div class="i-part" v-bind:style="boardStyle">
         <RealProcessor :position="positions.processor"></RealProcessor>
         <RealMemory :position="positions.memory"></RealMemory>
@@ -58,11 +58,11 @@ export default {
             width: 600,
             height: 380,
             positions: {
-                disk: [ 120, 120, 0 ],
-                memory: [ 30, 75, 0 ],
-                processor: [ 130, 30, 0 ],
-                screen: [ 360, 50, 0 ],
-                keyboard: [ 400, 240, 0 ],
+                disk: [ 120, 120 ],
+                memory: [ 30, 75 ],
+                processor: [ 130, 30 ],
+                screen: [ 360, 50 ],
+                keyboard: [ 400, 240 ],
             }
         }
     },

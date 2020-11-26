@@ -1,6 +1,6 @@
 <template>
-  <div class="im-view1 i-view">
-    <div>
+  <div class="i-view">
+    <div class="m-view">
       <div class="i-pin">
         读/写
       </div>
@@ -84,14 +84,13 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style>
-.im-view1 {
+<style scoped>
+.m-view {
     display: flex;
-    width: 300px;
+    flex-direction: row;
 }
 
-.i-view .i-pin {
+.i-pin {
     border-bottom: 1px solid #333;
 }
-
 </style>

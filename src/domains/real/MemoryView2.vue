@@ -1,5 +1,5 @@
 <template>
-  <div class="memory-view">
+  <div class="i-view">
   </div>
 </template>
 

@@ -99,9 +99,8 @@ import Livingbar from './Livingbar.vue'
 import CoreImager from './Imager.vue'
 
 import SimpleLayout from './layout/Simple.js'
-import OverlayLayout from './layout/Overlay.js'
-import StackLayout from './layout/Stack.js'
-import LayerLayout from './layout/Layer.js'
+// import OverlayLayout from './layout/Overlay.js'
+// import LayerLayout from './layout/Layer.js'
 
 
 const MODE = {
@@ -154,22 +153,6 @@ export default {
             return this.mode === MODE.FullScreen || this.mode === MODE.FullPage
         },
 
-        defaultLayout () {
-            return this.layouts[ 0 ]
-        },
-
-        overlayLayout () {
-            return this.layouts[ 1 ]
-        },
-
-        stackLayout () {
-            return this.layouts[ 2 ]
-        },
-
-        layerLayout () {
-            return this.layouts[ 3 ]
-        },
-
     },
 
     data() {
@@ -203,8 +186,8 @@ export default {
             frameStack: [],
 
             // 视图，每一个视图都是一个或者多个视图的集合
-            layoutIndex: 0,
             layouts: [],
+            currentLayout: null,
 
             // 使命和目标
             missions: [],
@@ -267,11 +250,11 @@ export default {
         window.addEventListener( 'resize', this.onWindowResize, false )
 
         let rect = this.viewRects[ this.mode ]
-        this.layouts.push( new SimpleLayout( rect.width, rect.height, this.imager.$el ) )
-        this.layouts.push( new OverlayLayout( rect.width, rect.height, this.imager.$el ) )
-        this.layouts.push( new StackLayout( rect.width, rect.height, this.imager.$el ) )
-        this.layouts.push( new LayerLayout( rect.width, rect.height, this.imager.$el ) )
-        this.defaultLayout.visible = true
+        this.currentLayout = new SimpleLayout( rect.width, rect.height, {
+            container: this.imager.$el
+        } )
+        this.currentLayout.visible = true
+        this.layouts.push( this.currentLayout )
 
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
@@ -296,7 +279,7 @@ export default {
 
             this.state = STATE.Ready
 
-            this.defaultLayout.addItem( this.mainDomain )
+            this.currentLayout.watchMainDomain( this.mainDomain )
             this.imager.toggleBusy( true )
         },
 
@@ -328,16 +311,14 @@ export default {
         },
 
         selectLayout ( index ) {
-            if ( this.layouts.length > this.layoutIndex )
-                this.layouts[ this.layoutIndex ].visible = false
-            this.layoutIndex = index
-            this.layouts[ index ].visible = true
+            this.currentLayout.visible = false
+            this.currentLayout = this.layouts[ index ]
+            this.currentLayout.visible = true
         },
 
         removeLayout ( index ) {
             if ( this.layouts.length > 1 ) {
                 let layout = this.layouts.splice( index, 1 )
-                // this.layout.dispose()
                 if ( layout.visible )
                     this.selectLayout( 0 )
             }
@@ -488,18 +469,15 @@ export default {
             }
 
             else if ( action === 'stack' ) {
-                this.defaultLayout.visible = false
-                this.stackLayout.watchDomain( value )
-                this.stackLayout.visible = true
+                this.currentLayout.watchViewStack ( value )
             }
         },
 
         onEventLayer ( action, value, oldValue ) {
 
             if ( action === 'select' ) {
-                // this.currentLayout.hideScene( oldValue )
                 console.log( oldValue.title )
-                this.layouts[ this.layoutIndex ].addItem( value )
+                this.currentLayout.watchMainDomain( value )
             }
 
         },
@@ -570,10 +548,6 @@ export default {
 }
 
 .i-view {
-    display: flex;
-    justify-content: right;
-    align-items: center;
-
     overflow: auto;
 }
 

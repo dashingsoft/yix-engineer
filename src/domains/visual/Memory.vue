@@ -1,5 +1,5 @@
 <template>
-  <div class="visual-memory">
+  <div class="i-view">
   </div>
 </template>
 
@@ -34,11 +34,4 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.memory {
-    width: 30px;
-    height: 30px;
-
-    background-image: url("../../assets/sim.svg");
-    background-size: cover;
-}
 </style>

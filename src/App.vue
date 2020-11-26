@@ -28,9 +28,9 @@ export default {
         let computer = new RealComputerObject()
         engineer.initMainDomain( computer )
 
-        let filename = '/Users/jondy/workspace/yix-engineer/test/samples/foo'
-        computer.initDiskFile( filename )
-        computer.initStartup( filename )
+        // let filename = '/Users/jondy/workspace/yix-engineer/test/samples/foo'
+        // computer.initDiskFile( filename )
+        // computer.initStartup( filename )
 
         // engineer.missions.push( file )
         // let actions = []

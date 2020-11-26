@@ -1,5 +1,5 @@
 <template>
-  <div class="processor">
+  <div class="i-part" v-bind:style="style">
   </div>
 </template>
 
@@ -11,21 +11,31 @@ export default {
     mixins: [ MixinDomain, MixinEntity ],
 
     name: 'RealProcessor',
+    props: {
+        position: Array,
+    },
 
     data() {
         return {
             title: "处理器",
         }
     },
+    computed: {
+        style () {
+            return {
+                left: this.position[ 0 ] + 'px',
+                top: this.position[ 1 ] + 'px',
+                width: '40px',
+                height: '40px',
+            }
+        }
+    }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.processor {
-    width: 40px;
-    height: 40px;
-
+.i-part {
     background-image: url("../../assets/cpu.svg");
     background-size: cover;
 }
