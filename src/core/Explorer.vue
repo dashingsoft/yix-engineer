@@ -144,6 +144,7 @@ export default {
 
         handleItemView ( index, obj ) {
             console.log( index + obj.title )
+            this.$emit( 'domain', 'stack', obj )
         },
 
         handleItemCommand ( cmd ) {

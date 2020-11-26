@@ -9,7 +9,7 @@ import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRe
 // import { CSS3DRenderer, CSS3DObject } from './CSS3DRenderer.js'
 import { MapControls as Controls } from './Controls.js'
 
-let idleScene, idleCamera, idleControl
+let idleScene, idleCamera
 let renderer1, renderer2
 
 
@@ -39,13 +39,6 @@ export default {
     },
 
     computed: {
-        currentLayout () {
-            for ( let i = 0; i < this.layouts.length; i ++ )
-                if ( ! this.layouts[ i ].inactive )
-                    return this.layouts[ i ]
-            // Unreachable
-            return null
-        }
     },
 
     mounted() {
@@ -84,13 +77,6 @@ export default {
         renderer2.domElement.style.position = 'absolute';
         renderer2.domElement.style.top = 0;
         this.$el.appendChild( renderer2.domElement );
-
-        idleControl = new Controls( idleCamera, document.body );
-        idleControl.enableDamping = true;
-        idleControl.dampingFactor = 0.05;
-        idleControl.minDistance = 100;
-        idleControl.maxDistance = 1000;
-        idleControl.maxPolarAngle = Math.PI / 2;
 
         this.animate()
     },
@@ -136,19 +122,12 @@ export default {
             if ( this.relScene.visible )
                 renderer1.render( this.relScene, this.relCamera )
 
-            if ( idleScene.visible ) {
-                idleControl.update()
+            if ( idleScene.visible )
                 renderer2.render( idleScene, idleCamera )
-            }
 
-            let layouts = [ this.currentLayout, this.overlayLayout ]
-            layouts.forEach( layout => {
-                if ( layout )
-                    this.currentLayout.viewports.forEach ( viewport => {
-                        let scene = viewport.scene
-                        scene.userData.control.update()
-                        scene.userData.renderer.render( scene, scene.userData.camera )
-                    } )
+            this.layouts.forEach( layout => {
+                if ( layout.visible )
+                    layout.render()
             } )
         },
 
@@ -206,7 +185,6 @@ export default {
                 }
             if ( ! scene )
                 scene = this.createObjectScene( obj, rect )
-            this.currentLayout.addScene( scene, rect )
           },
 
         unwatchObject ( obj ) {

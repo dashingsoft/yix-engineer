@@ -1,5 +1,5 @@
 <template>
-  <div class="i-disk i-view">
+  <div class="i-part" v-bind:style="style">
   </div>
 </template>
 
@@ -16,6 +16,23 @@ export default {
 
     name: 'RealDisk',
 
+    props: {
+        position: Array,
+    },
+
+    computed: {
+        style () {
+            return {
+                left: this.position[ 0 ] + 'px',
+                top: this.position[ 1 ] + 'px',
+                width: '60px',
+                height: '60px',
+                backgroundImage: 'url("../../assets/hdd.svg")',
+                backgroundSize: 'cover',
+            }
+        }
+    },
+
     data() {
         return {
             title: "硬盘",
@@ -24,7 +41,8 @@ export default {
     },
 
     methods: {
-        initFile ( filename ) {
+
+        createFile ( filename ) {
             const RealFileObject = Vue.extend( RealFile )
             let file = new RealFileObject( {
                 filename: filename
@@ -32,17 +50,11 @@ export default {
             file.$mount()
             this.files.push( file )
         },
+
     },
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.i-disk {
-    width: 60px;
-    height: 60px;
-
-    background-image: url("../../assets/hdd.svg");
-    background-size: cover;
-}
 </style>

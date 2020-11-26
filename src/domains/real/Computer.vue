@@ -1,27 +1,14 @@
 <template>
-  <div class="i-view"
-       v-bind:style="{ width: width + 'px', height: height + 'px' }">
-    <div class="real-board">
-      <RealProcessor
-        v-bind:style="{ left: relpos.cpu.left + 'px', top: relpos.cpu.top + 'px' }"
-        class="part">
-      </RealProcessor>
-      <RealMemory
-        v-bind:style="{ left: relpos.mem.left + 'px', top: relpos.mem.top + 'px' }"
-        class="part">
-      </RealMemory>
-      <RealDisk ref="disk"
-                v-bind:style="{ left: relpos.disk.left + 'px', top: relpos.disk.top + 'px' }"
-                class="part">
-      </RealDisk>
+  <div class="i-view">
+    <div v-bind:style="{ width: width + 'px', height: height + 'px' }">
+      <div class="i-part" v-bind:style="boardStyle">
+        <RealProcessor :position="positions.processor"></RealProcessor>
+        <RealMemory :position="positions.memory"></RealMemory>
+        <RealDisk :position="positions.disk"></RealDisk>
+      </div>
+      <RealScreen :position="positions.screen"></RealScreen>
+      <RealKeyboard :position="positions.keyboard"></RealKeyboard>
     </div>
-    <RealScreen
-      v-bind:style="{ left: relpos.screen.left + 'px', top: relpos.screen.top + 'px' }"
-      class="part">
-    </RealScreen>
-    <RealKeyboard
-      v-bind:style="{ left: relpos.kbd.left + 'px', top: relpos.kbd.top + 'px' }"
-      class="part"></RealKeyboard>
   </div>
 </template>
 
@@ -42,7 +29,9 @@ import VisualComputer from "../visual/Computer.vue"
 
 export default {
     mixins: [ MixinDomain, MixinEntity ],
+
     name: 'RealComputer',
+
     components: {
         RealMemory,
         RealDisk,
@@ -50,32 +39,30 @@ export default {
         RealScreen,
         RealProcessor,
     },
+
+    computed: {
+        boardStyle () {
+            return {
+                border: "1px solid #E4E7ED",
+                left: "50px",
+                top: "120px",
+                right: "340px",
+                bottom: "60px",
+            }
+        }
+    },
+
     data() {
         return {
             title: "计算机",
             width: 600,
             height: 380,
-            relpos: {
-                disk: {
-                    left: 120,
-                    top: 120,
-                },
-                mem: {
-                    left: 30,
-                    top: 75,
-                },
-                cpu: {
-                    left: 130,
-                    top: 30,
-                },
-                screen: {
-                    left: 360,
-                    top: 50,
-                },
-                kbd: {
-                    left: 400,
-                    top: 240,
-                },
+            positions: {
+                disk: [ 120, 120, 0 ],
+                memory: [ 30, 75, 0 ],
+                processor: [ 130, 30, 0 ],
+                screen: [ 360, 50, 0 ],
+                keyboard: [ 400, 240, 0 ],
             }
         }
     },
@@ -93,24 +80,7 @@ export default {
 
     methods: {
 
-        initStartup ( filename ) {
-            console.log( 'autorun ' + filename )
-        },
-
-        initDiskFile ( filename ) {
-            this.$refs.disk.initFile( filename )
-        },
-
-        start () {
-        },
-
         normalize () {
-        },
-
-        loadFile () {
-        },
-
-        onEventPower () {
         },
 
     }
@@ -119,17 +89,4 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.real-board {
-    position: absolute;
-    border: 1px solid #E4E7ED;
-    left: 50px;
-    top: 120px;
-    right: 340px;
-    bottom: 60px;
-}
-
-.part {
-    position: absolute;
-}
-
 </style>
