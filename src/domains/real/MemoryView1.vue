@@ -1,28 +1,30 @@
 <template>
   <div class="i-view">
     <div class="m-view">
-      <div class="i-pin">
-        读/写
+      <div>
+        <div class="i-pin">
+          读/写
+        </div>
+        <div v-for="(item, index) in items"
+             :key="index"
+             class="i-pin">
+          A{{ index }}
+        </div>
       </div>
-      <div v-for="(item, index) in items"
-           :key="index"
-           class="i-pin">
-        A{{ index }}
+      <div class="m-body">
+        <div>{{ displayAddr }}</div>
+        <div>{{ msg }}</div>
+        <div>{{ displayValue }} </div>
       </div>
-    </div>
-    <div style="flex-grow: 1">
-      <div>{{ displayAddr }}</div>
-      <div>{{ msg }}</div>
-      <div>{{ displayValue }} </div>
-    </div>
-    <div>
-      <div class="i-pin">
-        忙
-      </div>
-      <div v-for="(item, index) in items"
-           :key="index"
-           class="i-pin">
-        D{{ index }}
+      <div>
+        <div class="i-pin">
+          忙
+        </div>
+        <div v-for="(item, index) in items"
+             :key="index"
+             class="i-pin">
+          D{{ index }}
+        </div>
       </div>
     </div>
   </div>
@@ -87,10 +89,23 @@ export default {
 <style scoped>
 .m-view {
     display: flex;
+    width: 380px;
     flex-direction: row;
 }
 
 .i-pin {
-    border-bottom: 1px solid #333;
+    border-bottom: 2px solid #333;
+    padding: 0 6px;
 }
+
+.m-body {
+    flex-grow: 1;
+
+    border: 2px solid #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
 </style>

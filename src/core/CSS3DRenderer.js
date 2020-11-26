@@ -227,6 +227,7 @@ var CSS3DRenderer = function () {
 			var element = object.element;
 			var cachedObject = cache.objects.get( object );
 
+
 			if ( cachedObject === undefined || cachedObject.style !== style ) {
 
 				element.style.WebkitTransform = style;

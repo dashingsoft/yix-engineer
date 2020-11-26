@@ -4,6 +4,7 @@
 //
 import BaseLayout from './Base.js'
 
+
 const MODE = {
     MASTER: 0,
     ROW3D: 1,
@@ -13,16 +14,15 @@ const MODE = {
 }
 
 
-var SimpleLayout = function ( width = 800, height = 600, options ) {
+var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
 
     BaseLayout.call( this, width, height, options )
 
     let scope = this
-    let margin = options.margin === undefined ? 0 : options.margin
 
-    let _mode = MODE.MASTER
-    let _main = undefined
-    let _angle = Math.PI * 0
+    let _mode = options.mode === undefined ? MODE.MASTER : options.mode
+    let _angle = options.angle === undefined ? Math.PI / 10 : options.angle
+    let _main = options.main
 
     // Property
 
@@ -48,145 +48,89 @@ var SimpleLayout = function ( width = 800, height = 600, options ) {
         }
     } )
 
+
     // API
-
-    this.addItem = function ( domain, main ) {
-        let item = scope.createObject3D( domain.$el )
-        item.name = 'i-' + domain._uid
-
-        let rect = domain.$el.getBoundingClientRect()
-        if ( rect.width && rect.height ) {
-            item.userData.width = rect.width
-            item.userData.height = rect.height
-        }
-
-        else if ( domain.width && domain.height ) {
-            item.userData.width = domain.width
-            item.userData.height = domain.height
-        }
-
-        else {
-            item.userData.width = scope.width
-            item.userData.height = scope.height
-        }
-        item.userData.position = [ 0, 0, 0 ]
-
-        if ( _main === undefined || main )
-            _main = main
-
-        scope.scene.add ( item )
-        return item
+    this.addItem = function () {
+        arguments.forEach( item => scope.items.push( item ) )
+        rearrange()
     }
 
     this.removeItem = function ( item ) {
-        scope.scene.remove ( item )
-    }
-
-    this.prev = function () {
-        scope.mode --
-    }
-
-    this.next = function () {
-        scope.mode ++
-    }
-
-    this.select = function ( item ) {
-        _main = item
-    }
-
-    this.reset = function () {
+        BaseLayout.removeItem.call( this, item )
         rearrange()
     }
 
     this.watchMainDomain = function ( domain ) {
-        let item = getItem ( domain )
-
+        let item = scope.findItem( domain, true )
         _main = item
-        scope.mode = MODE.MASTER
+        showMasterItem ( item )
+    }
+
+    this.watchMainDomain = function ( domain ) {
+        _main = scope.findItem( domain, true )
+        showMasterItem ( _main )
     }
 
     this.watchViewStack = function ( domain ) {
         let items = []
-        items.push( getItem ( domain ) )
-        domain.viewStack.forEach ( v => items.push ( getItem ( v ) ) )
-        scope.scene.children.forEach ( child => child.visible = false )
-        showStackItems( items )
+        items.push( scope.findItem( domain, true ) )
+        domain.viewStack.forEach( v => items.push( scope.findItem( v, true ) ) )
+        items.length === 1 ? showMasterItem( items[ 0 ] ) : showStackItems( items )
     }
 
     // Internal functions
 
-    function getItem ( domain ) {
-        let item = scope.scene.getObjectByName( 'i-' + domain._uid )
-        return  item ? item : scope.addItem( domain )
-    }
-
-    function calculateDistance ( vw, vh ) {
-        let mx = scope.width * ( scope.width / 2 - margin )
-        let my = scope.height * ( scope.height / 2 - margin )
-        let d = Math.max( mx / ( vw / 2 - margin), my / ( vh / 2 - margin ) )
-        let d1 = Math.min( mx / scope.width, my / scope.height)
-        let d2 = Math.max( mx / vw * 4, my / vh * 4 )
-        return [d, d1, d2]
-    }
-
     function showMasterItem ( item ) {
-        let pos = item.userData.position
-        let [ d, d1, d2 ] = calculateDistance( item.userData.width, item.userData.height )
-
-        scope.camera.lookAt( pos )
-        scope.camera.position.set( pos[ 0 ], pos[ 1 ],  pos[ 2 ] + d )
-        scope.control.minDistance = d1
-        scope.control.maxDistance = d2
-
-        console.log( d, pos, d1, d2 )
+        scope.items.forEach ( item => item.visible = false )
+        item.moveTo( 0, 0 )
+        item.setSize( scope.width, scope.height )
+        item.reset()
         item.visible = true
     }
 
     function showStackItems( items ) {
         let n = items.length
-        let w = scope.width / n
-        let h = scope.height / n
-        let [ d, d1, d2 ] = calculateDistance( w, h )
+        let vw = scope.width / n
+        let vh = scope.height / n
 
-        scope.camera.lookAt( 0, 0, 0 )
-        scope.control.minDistance = d1
-        scope.control.maxDistance = d2
+        scope.items.forEach ( item => item.visible = false )
 
         if ( _mode === MODE.COL2D || _mode === MODE.COL3D ) {
-            let dt = h
-            let z = - h / 2 + scope.height / 2
+            let y = 0
             items.forEach( item => {
                 item.visible = true
-                item.position.set( 0, 0, z )
-                z -= dt
+                item.moveTo( 0, y )
+                // item.setSize( scope.width, vh )
+                item.reset()
+                y += vh
             } )
-            scope.camera.position.set( 0, d * Math.sin( scope.angle ), d * Math.cos( scope.angle ) )
+
         }
         else {
-            let dt = w
-            let z = - w / 2 + scope.width / 2
+            let x = - scope.width / 2 + vw / 2
             items.forEach( item => {
                 item.visible = true
-                item.position.set( 0, 0, z * 3 )
-                console.log( 'position at ' + z )
-                z -= dt
+                item.setViewport( {
+                    left: 0,
+                    top: 0,
+                    width: vw,
+                    height: scope.height
+                }, 0 )
+                item.moveTo( x, 0 )
+                x += vw
             } )
-            scope.camera.position.set( d * Math.sin( scope.angle ), 0, d * Math.cos( scope.angle ) )
         }
     }
 
     function rearrange () {
-        if ( ! scope.scene.children.length )
+        if ( ! scope.items.length )
             return
 
-        if ( scope.mode === MODE.MASTER ) {
-            scope.scene.children.forEach ( child => child.visible = false )
-            showMasterItem ( _main ? _main : scope.scene.children[ 0 ] )
-        }
-        else {
-            scope.scene.children.forEach ( child => child.visible = false )
-            showStackItems( scope.scene.children )
-        }
+        if ( scope.mode === MODE.MASTER )
+            showMasterItem ( _main ? _main : scope.items[ 0 ] )
+
+        else
+            showStackItems( scope.items )
 
         scope.render()
     }

@@ -1,89 +1,53 @@
-import * as THREE from 'three'
-import { CSS3DRenderer, CSS3DObject } from '../CSS3DRenderer.js'
-import { MapControls as Controls } from '../Controls.js'
+import CoreView from './View.js'
 
-
-var BaseLayout = function ( width = 800, height = 600, options ) {
+var BaseLayout = function ( width = 800, height = 600, options = {} ) {
 
     let scope = this
-    let fov = options.fov === undefined ? 45 : options.fov
-    let near = options.near === undefined ? 1 : options.near
-    let far = options.far === undefined ? 10000 : options.far
-    let background = options.background === undefined ? 0xf0f0f0 : options.background
-    let left = options.left === undefined ? 0 : options.left
-    let top = options.top === undefined ? 0 : options.top
-
-    let camera = new THREE.PerspectiveCamera( fov, width / height, near, far )
-    let scene = new THREE.Scene()
-    let renderer = new CSS3DRenderer()
-    scene.background = new THREE.Color( background )
-
-    renderer.setSize( width, height )
-    renderer.domElement.style.position = 'absolute'
-    renderer.domElement.style.pointerEvents = 'auto'
-    renderer.domElement.style.left = left + 'px'
-    renderer.domElement.style.top = top + 'px'
-    renderer.domElement.style.display = 'none'
-
-    if ( options.container )
-        options.container.appendChild ( renderer.domElement )
-
-    let control = new Controls( camera, renderer.domElement )
-    control.enableDamping = true;
+    let items = []
 
     // API
+    this.items = items
     this.width = width
     this.height = height
-    this.camera = camera
-    this.scene = scene
-    this.renderer = renderer
-    this.control = control
+    this.container = options.container
 
-    Object.defineProperty( this, 'visible', {
-        get() {
-            return scene.visible
-        },
-        set( visible ) {
-            scene.visible = visible
-            renderer.domElement.style.display = visible ? '' : 'none'
+    this.findItem = function ( domain, created = false ) {
+        let source = domain.$root
+        for ( let i = 0; i < items.length; i ++ )
+            if ( items[ i ].source === source )
+                return items[ i ]
+        if ( created ) {
+            let item = new CoreView( domain, {
+                width: scope.width,
+                height: scope.height,
+                container: scope.container
+            } )
+            items.push( item )
+            return item
         }
-    } )
-
-    this.createObject3D = function ( element, clone ) {
-        return new CSS3DObject( clone ? new element.cloneNode ( true ) : element )
     }
 
-    this.moveTo = function ( left, top ) {
-        renderer.domElement.style.left = left + 'px'
-        renderer.domElement.style.top = top + 'px'
+    this.addItem = function () {
+        arguments.forEach( item => items.push( item ) )
     }
 
-    this.setSize = function ( width, height ) {
-
-        if ( scope.width === width && scope.height === height )
-            return
-
-        let aspect = width / height
-        camera.aspect = aspect
-        camera.updateProjectionMatrix()
-        renderer.setSize( width, height )
-
-        scope.width = width
-        scope.height = height
-
+    this.removeItem = function ( item ) {
+        let index = items.indexOf( item )
+        if ( index > -1 )
+            items.splice( index, 1 )
     }
 
     this.render = function () {
-        if ( scene.visible ) {
-            control.update()
-            renderer.render( scene, camera )
-        }
+        items.forEach( item => item.render() )
+    }
+
+    this.setSize = function ( w, h ) {
+        items.forEach( item => item.setSize( w, h ) )
     }
 
     this.clear = function () {
-        scene.remove.apply( scene, scene.children )
+        items.clear()
     }
-
 }
 
 BaseLayout.prototype = Object.create( {} )

@@ -89,4 +89,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.i-view {
+    border: 1px solid #C0C4CC;
+}
 </style>
