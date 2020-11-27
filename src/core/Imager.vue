@@ -1,5 +1,6 @@
 <template>
-  <div class="y-imager"></div>
+  <div class="y-imager"
+       @click="$emit( 'imager', 'click' )"></div>
 </template>
 
 <script>
@@ -263,5 +264,6 @@ export default {
 .y-imager {
     position: absolute;
     z-index: 2;
+    outline: 0;
 }
 </style>

@@ -20,7 +20,7 @@
         <el-button
           size="mini"
           title="关联视图模式"
-          @click="$emit( 'view', 'stack' )"
+          @click="$emit( 'domain', 'stack', currentDomain )"
           icon="el-icon-copy-document"></el-button>
       </template>
       <template v-slot:body>
@@ -38,6 +38,7 @@
     <CoreImager
       :layouts="layouts"
       :scenes="scenes"
+      @imager="onEventImager"
       ref="imager"></CoreImager>
     <Livingbar
       :state="state"
@@ -265,6 +266,7 @@ export default {
         this.$on( 'domain', this.onEventDomain )
         this.$on( 'layer', this.onEventLayer )
         this.$on( 'view', this.onEventView )
+        this.$on( 'imager', this.onEventImager )
     },
 
     methods: {
@@ -279,7 +281,7 @@ export default {
 
             this.state = STATE.Ready
 
-            this.currentLayout.watchMainDomain( this.mainDomain )
+            this.currentLayout.watchDomainMain( this.mainDomain )
             this.imager.toggleBusy( true )
         },
 
@@ -468,8 +470,12 @@ export default {
                 this.$emit( 'page', 'material' )
             }
 
+            else if ( action === 'detail' ) {
+                this.currentLayout.watchDomainDetail ( value )
+            }
+
             else if ( action === 'stack' ) {
-                this.currentLayout.watchViewStack ( value )
+                this.currentLayout.watchDomainStack ( value )
             }
         },
 
@@ -477,7 +483,7 @@ export default {
 
             if ( action === 'select' ) {
                 console.log( oldValue.title )
-                this.currentLayout.watchMainDomain( value )
+                this.currentLayout.watchDomainMain( value )
             }
 
         },
@@ -489,13 +495,18 @@ export default {
 
         onEventEngineer ( action, obj, arg ) {
             if ( action === 'click' ) {
-                this.explorer.setCurrentDomain( obj === this.currentDomain ? null : obj )
+                this.explorer.setCurrentDomain( obj )
             }
             else if ( action === 'dblclick' ) {
                 console.log( 'dblclick ' + arg )
             }
         },
 
+        onEventImager ( action ) {
+            if ( action === 'click' ) {
+                this.explorer.setCurrentDomain( null )
+            }
+        },
     }
 }
 
@@ -548,6 +559,9 @@ export default {
 }
 
 .i-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     overflow: auto;
 }
 

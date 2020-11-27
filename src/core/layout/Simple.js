@@ -21,7 +21,7 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
     let scope = this
 
     let _mode = options.mode === undefined ? MODE.MASTER : options.mode
-    let _angle = options.angle === undefined ? Math.PI / 10 : options.angle
+    let _angle = options.angle === undefined ? Math.PI / 8 : options.angle
     let _main = options.main
 
     // Property
@@ -60,22 +60,34 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
         rearrange()
     }
 
-    this.watchMainDomain = function ( domain ) {
-        let item = scope.findItem( domain, true )
-        _main = item
-        showMasterItem ( item )
+    this.watchDomainMain = function ( domain ) {
+        if ( domain ) {
+            _main = scope.findItem( domain, true )
+            showMasterItem ( _main )
+        }
     }
 
-    this.watchMainDomain = function ( domain ) {
-        _main = scope.findItem( domain, true )
-        showMasterItem ( _main )
+    this.watchDomainDetail = function ( domain ) {
+        if ( domain ) {
+            if ( domain.viewStack.length ) {
+                let items = domain.viewStack.map( v => scope.findItem( v, true ) )
+                items.splice( 0, 0, scope.findItem( domain, true ) )
+                let index = items.indexOf( _main )
+                index ++
+                _main = ( ! index || index > domain.viewStack.length ) ? items[ 0 ] : items[ index ]
+                showMasterItem ( _main )
+            }
+            else
+                scope.watchDomainMain( domain )
+        }
     }
 
-    this.watchViewStack = function ( domain ) {
-        let items = []
-        items.push( scope.findItem( domain, true ) )
-        domain.viewStack.forEach( v => items.push( scope.findItem( v, true ) ) )
-        items.length === 1 ? showMasterItem( items[ 0 ] ) : showStackItems( items )
+    this.watchDomainStack = function ( domain ) {
+        if ( domain ) {
+            let items = domain.viewStack.map( v => scope.findItem( v, true ) )
+            items.splice( 0, 0, scope.findItem( domain, true ) )
+            items.length === 1 ? showMasterItem( items[ 0 ] ) : showStackItems( items )
+        }
     }
 
     // Internal functions
@@ -96,12 +108,11 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
         scope.items.forEach ( item => item.visible = false )
 
         if ( _mode === MODE.COL2D || _mode === MODE.COL3D ) {
-            let y = 0
+            let y = - scope.height / 2 + vh / 2
             items.forEach( item => {
                 item.visible = true
+                item.setViewRect( scope.width, vh, scope.angle )
                 item.moveTo( 0, y )
-                // item.setSize( scope.width, vh )
-                item.reset()
                 y += vh
             } )
 
@@ -110,12 +121,7 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
             let x = - scope.width / 2 + vw / 2
             items.forEach( item => {
                 item.visible = true
-                item.setViewport( {
-                    left: 0,
-                    top: 0,
-                    width: vw,
-                    height: scope.height
-                }, 0 )
+                item.setViewRect( vw, scope.height, scope.angle )
                 item.moveTo( x, 0 )
                 x += vw
             } )

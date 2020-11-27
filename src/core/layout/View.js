@@ -23,7 +23,7 @@ var View = function ( domain, options = {} ) {
 
     renderer.setSize( width, height )
     renderer.domElement.style.position = 'absolute'
-    renderer.domElement.style.pointerEvents = 'auto'
+    renderer.domElement.style.pointerEvents = 'none'
     renderer.domElement.style.left = left + 'px'
     renderer.domElement.style.top = top + 'px'
 
@@ -83,9 +83,12 @@ var View = function ( domain, options = {} ) {
         setMainView()
     }
 
-    this.setViewRect = function ( rect, angle ) {
-        let target = new THREE.Vector3( rect.left, rect.top, 0 )
-        let [ d, d1, d2 ] = calculateDistance( rect.width, rect.height )
+    this.setViewRect = function ( vwidth, vheight, angle ) {
+        let target = new THREE.Vector3( 0, 0, 0 )
+        let rect = domain.$el.getBoundingClientRect()
+        let w =  domain.width ? domain.width : rect.width ? rect.width : scope.width
+        let h =  domain.height ? domain.height : rect.height ? rect.height : scope.height
+        let [ d, d1, d2 ] = calculateDistance( w, h, vwidth, vheight )
         control.reset()
 
         scene.children.forEach( child => child.position.copy( target ) )
@@ -99,29 +102,20 @@ var View = function ( domain, options = {} ) {
 
     // Internal function
 
-    function calculateDistance ( vw, vh ) {
-        let mx = scope.width * ( scope.width / 2 - margin )
-        let my = scope.height * ( scope.height / 2 - margin )
-        let d = Math.max( mx / ( vw / 2 - margin), my / ( vh / 2 - margin ) )
-        let d1 = Math.min( mx / scope.width, my / scope.height)
-        let d2 = Math.max( mx / vw * 4, my / vh * 4 )
+    function calculateDistance ( width, height, vwidth, vheight ) {
+        let mx = scope.width / ( vwidth / 2 - margin )
+        let my = scope.height / ( vheight / 2 - margin )
+        let d = Math.max( mx * ( width / 2 - margin), my * ( height / 2 - margin ) )
+        let d1 = Math.min( mx * Math.max( width, vwidth ), my * Math.max( height, vheight ) )
+        let d2 = Math.max( mx * width * 4, my * height * 4 )
         return [d, d1, d2]
     }
 
     function setMainView () {
         let rect = domain.$el.getBoundingClientRect()
-        if ( ! rect.width || ! rect.height ) {
-            if ( domain.width && domain.height ) {
-                rect.width = domain.width
-                rect.height = domain.height
-            }
-            else {
-                rect.width = scope.width
-                rect.height = scope.height
-            }
-        }
-
-        let [ d, d1, d2 ] = calculateDistance( rect.width, rect.height )
+        let w =  domain.width ? domain.width : rect.width ? rect.width : scope.width
+        let h =  domain.height ? domain.height : rect.height ? rect.height : scope.height
+        let [ d, d1, d2 ] = calculateDistance( w, h, scope.width, scope.height )
         control.reset()
 
         scene.children.forEach( child => child.position.set( 0, 0, 0 ) )

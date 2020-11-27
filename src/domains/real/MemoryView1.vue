@@ -76,6 +76,8 @@ export default {
         return {
             title: '内存读写视图',
             msg: '内存',
+            width: 300,
+            height: 1200,
         }
     },
 
@@ -89,8 +91,8 @@ export default {
 <style scoped>
 .m-view {
     display: flex;
-    width: 380px;
     flex-direction: row;
+    width: 300px;
 }
 
 .i-pin {

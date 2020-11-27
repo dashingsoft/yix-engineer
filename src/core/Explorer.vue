@@ -143,8 +143,7 @@ export default {
         },
 
         handleItemView ( index, obj ) {
-            console.log( index + obj.title )
-            this.$emit( 'domain', 'stack', obj )
+            this.$emit( 'domain', 'detail', obj )
         },
 
         handleItemCommand ( cmd ) {
