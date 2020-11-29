@@ -44,7 +44,6 @@ export default {
     mounted() {
         let visualMemory = Vue.extend( VisualMemory )
         let memory = new visualMemory()
-
         memory.$mount()
         this.mapStack.push( memory )
 

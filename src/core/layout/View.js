@@ -210,9 +210,8 @@ var View = function ( domain, options = {} ) {
     }
 
     function getObjectSize() {
-        let rect = domain.$el.getBoundingClientRect()
-        return [ domain.width ? domain.width : rect.width ? rect.width : scope.width,
-                 domain.height ? domain.height : rect.height ? rect.height : scope.height ]
+        return [ domain.width ? domain.width : scope.width,
+                 domain.height ? domain.height : scope.height ]
     }
 
     function getDistanceRange ( width, height, vwidth, vheight ) {

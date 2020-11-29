@@ -30,13 +30,9 @@ export default {
             // 实体层域空间层数都固定为 0
             layer: 0,
 
-            // 绑定的内部 CSS3DObject ，用来在 Imager 中显示
+            // 绑定的内部 CSS3DObject
             css3dobj: null,
 
-            // 显示属性
-            width: 100,
-            height: 100,
-            resolution: 1.0,
         }
 
     },

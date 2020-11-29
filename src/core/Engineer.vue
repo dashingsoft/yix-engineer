@@ -14,12 +14,18 @@
           icon="el-icon-news"></el-button>
         <el-button
           size="mini"
-          title="关联视图模式"
+          title="关联图模式"
+          :class="{ 'x-checked': runOptions.relationMode }"
+          @click="$emit( 'view', 'relation' )"
+          icon="el-icon-connection"></el-button>
+        <el-button
+          size="mini"
+          title="切换视图排列模式"
           @click="$emit( 'domain', 'stack', currentDomain )"
           icon="el-icon-copy-document"></el-button>
         <el-button
           size="mini"
-          title="多层模式"
+          title="切换多层视图模式"
           @click="$emit( 'view', 'layer' )"
           icon="el-icon-coin"></el-button>
       </template>
@@ -196,6 +202,7 @@ export default {
             runOptions: {
                 fullScreen: false,
                 overlayMode: true,
+                relationMode: false,
                 runSpeed: 1,
                 runLevel: 1,
                 animation: true,
@@ -261,6 +268,14 @@ export default {
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
         } )
+
+        let domains = document.createElement( 'div' )
+        domains.className = 'x-full i-domains'
+        document.body.appendChild( domains )
+
+        let relations = document.createElement( 'div' )
+        relations.className = 'i-relations'
+        document.body.appendChild( relations )
 
         this.$on( 'living', this.onEventLiving )
         this.$on( 'page', this.onEventPage )
@@ -501,6 +516,8 @@ export default {
         onEventView ( action ) {
             if ( action === 'overlay' )
                 this.runOptions.overlayMode = ! this.runOptions.overlayMode
+            else if ( action === 'relation' )
+                this.runOptions.relationMode = ! this.runOptions.relationMode
         },
 
         onEventEngineer ( action, obj, arg ) {
@@ -569,10 +586,7 @@ export default {
 }
 
 .i-view {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: auto;
+    display: absolute;
 }
 
 .i-part {
@@ -580,18 +594,24 @@ export default {
     cursor: pointer;
 }
 
-.i-violate {
-    position: 'absolute';
+.i-relation {
+    position: absolute;
+    transform-origin: top left;
     z-index: 90;
+}
+
+.i-domains {
+    opacity: 0;
+    z-index: -1;
 }
 
 .i-layer0 {
 }
 
-i-layer1 {
+.i-layer1 {
 }
 
-i-layer2 {
+.i-layer2 {
 }
 
 </style>

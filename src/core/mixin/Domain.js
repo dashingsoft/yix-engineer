@@ -48,11 +48,30 @@ export default {
             // 属性
             // 组成域空间的材料，类型为 Material 的对象
             materials: [],
+
+            // 显示属性
+            width: 0,
+            height: 0,
+            resolution: 1.0,
+
         }
     },
 
     mounted () {
+
         this.$on( 'talk', this.onEventTalk )
+
+        if ( this.$root === this )
+            document.querySelector( '.i-domains' ).appendChild( this.$el )
+
+        this.$nextTick( () => {
+            let size = this.getScreenSize()
+            if ( size === undefined )
+                console.warn( this.title + ' could not get screen size' )
+            else
+                [ this.width, this.height ] = size
+            console.log( this.title + ' get size ' + size )
+        } )
     },
 
     methods: {
@@ -103,6 +122,42 @@ export default {
                     result.onComplete = () => {
                         obj.nofify( 'done' )
                     }
+                }
+            }
+        },
+
+        getScreenSize () {
+            let rect = this.$el.getBoundingClientRect()
+            let size = [ Math.round( rect.width ), Math.round( rect.height ) ]
+            if ( size[ 0 ] && size[ 1 ] )
+                return size
+
+            let rects = this.$el.getClientRects()
+            if ( rects.length > 0 ) {
+                let left = rects[ 0 ].left
+                let right = rects[ 0 ].right
+                let top = rects[ 0 ].top
+                let bottom = rects[ 0 ].bottom
+                rects.forEach( item => {
+                    left = item.left < left ? item.left : left
+                    right = item.right < right ? item.right : right
+                    top = item.top < top ? item.top : top
+                    bottom = item.bottom < bottom ? item.bottom : bottom
+                } )
+                size = [ Math.round( right - left ), Math.round( bottom - top ) ]
+                if ( size[ 0 ] && size[ 1 ] )
+                    return size
+            }
+
+            let parent = this.$el.parentElement
+            if ( parent ) {
+                let index = 0
+                while ( parent.children[ index ] !== this.$el ) index ++
+                rect = parent.getClientRects()[ index ]
+                if ( rect ) {
+                    size = [ Math.round( rect.width ), Math.round( rect.height ) ]
+                    if ( size[ 0 ] && size[ 1 ] )
+                        return size
                 }
             }
         },

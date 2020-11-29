@@ -1,5 +1,8 @@
 <template>
   <div class="i-view">
+    <div class="m-view">
+      {{ title }}
+    </div>
   </div>
 </template>
 
@@ -20,7 +23,7 @@ export default {
     },
     data() {
         return {
-            title: "内存",
+            title: "内存空间",
         }
     },
     mounted() {

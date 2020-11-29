@@ -1,19 +1,28 @@
 <template>
   <div class="i-view">
     <div class="m-view">
-      <span>{{ title }}</span>
+      <div class="m-header">
+        <span>{{ title }}</span>
+      </div>
+      <div class="m-body">
+        <div class="m-addr">
+        </div>
+        <div class="m-data">
+        </div>
+      </div>
       <el-table
-        :data="tableData"
-        width="600">
+        size="medium"
+        empty-text=""
+        :data="tableData">
         <el-table-column
+          header-align="center"
           prop="addr"
-          label="地址"
-          width="180">
+          label="地址">
         </el-table-column>
         <el-table-column
+          header-align="center"
           prop="value"
-          label="数值"
-          width="180">
+          label="数据">
         </el-table-column>
       </el-table>
     </div>
@@ -27,8 +36,6 @@ export default {
     data() {
         return {
             title: '内存数据视图',
-            width: 800,
-            height: 600,
             tableData: [],
         }
     },
@@ -83,10 +90,22 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.m-view > span {
-    display: inline-block;
+.m-view {
+    width: 360px;
+    padding: 16px;
+    max-height: 100%;
+}
+
+.m-header {
+    font-size: 1.6rem;
     width: 100%;
     text-align: center;
-    padding: 6px;
+    padding: 16px;
 }
+
+.m-body {
+    display: flex;
+    flex-direction: column;
+}
+
 </style>
