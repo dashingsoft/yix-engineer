@@ -14,14 +14,14 @@
           icon="el-icon-news"></el-button>
         <el-button
           size="mini"
-          title="多层模式"
-          @click="$emit( 'view', 'layer' )"
-          icon="el-icon-coin"></el-button>
-        <el-button
-          size="mini"
           title="关联视图模式"
           @click="$emit( 'domain', 'stack', currentDomain )"
           icon="el-icon-copy-document"></el-button>
+        <el-button
+          size="mini"
+          title="多层模式"
+          @click="$emit( 'view', 'layer' )"
+          icon="el-icon-coin"></el-button>
       </template>
       <template v-slot:body>
         <div class="v-left" v-bind:style="{ width: sidebar.width + 'px' }">
@@ -252,7 +252,8 @@ export default {
 
         let rect = this.viewRects[ this.mode ]
         this.currentLayout = new SimpleLayout( rect.width, rect.height, {
-            container: this.imager.$el
+            container: this.imager.$el,
+            items: this.scenes
         } )
         this.currentLayout.visible = true
         this.layouts.push( this.currentLayout )
@@ -471,7 +472,16 @@ export default {
             }
 
             else if ( action === 'detail' ) {
-                this.currentLayout.watchDomainDetail ( value )
+                this.currentLayout.watchDomainDetails ( value, this.runOptions.overlayMode )
+            }
+
+            else if ( action === 'show' ) {
+                console.log( 'show view ' + value.title )
+                this.currentLayout.watchDomainMain ( value )
+            }
+
+            else if ( action === 'delete' ) {
+                console.log( 'Delete domain ' + value.title )
             }
 
             else if ( action === 'stack' ) {
@@ -568,6 +578,11 @@ export default {
 .i-part {
     position: absolute;
     cursor: pointer;
+}
+
+.i-violate {
+    position: 'absolute';
+    z-index: 90;
 }
 
 .i-layer0 {

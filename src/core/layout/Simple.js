@@ -67,15 +67,20 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
         }
     }
 
-    this.watchDomainDetail = function ( domain ) {
+    this.watchDomainDetail = function ( domain, overlay ) {
         if ( domain ) {
             if ( domain.viewStack.length ) {
                 let items = domain.viewStack.map( v => scope.findItem( v, true ) )
                 items.splice( 0, 0, scope.findItem( domain, true ) )
                 let index = items.indexOf( _main )
                 index ++
-                _main = ( ! index || index > domain.viewStack.length ) ? items[ 0 ] : items[ index ]
+                if ( index > domain.viewStack.length )
+                    index = 0
+                _main = items[ index ]
                 showMasterItem ( _main )
+
+                if ( index && overlay )
+                    showOverlayItems( items.slice( 0, index ) )
             }
             else
                 scope.watchDomainMain( domain )
@@ -90,14 +95,35 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
         }
     }
 
+    this.watchDomainDetails = function ( domain ) {
+        let items = domain.viewStack.map( v => scope.findItem( v, true ) )
+        if ( ! items.length )
+            return scope.watchDomainMain( domain )
+
+        items.splice( 0, 0, scope.findItem( domain, true ) )
+        showStackItems( items )
+
+        let elements = domain.viewStack.map( v => v.$el )
+        elements.splice( 0, 0, domain.$el )
+        domain.$nextTick( () => {
+            let tweens = items.slice( 1 ).map( ( item, index ) => {
+                return item.createTweenFlowIn( elements[ index ] )
+            } )
+            if ( tweens.indexOf( undefined ) === -1 ) {
+                tweens.slice( 0, -1 ).forEach( ( item, index ) => item.chain( tweens[ index + 1 ] ) )
+                tweens[ 0 ].start()
+            }
+        } )
+    }
+
     // Internal functions
 
     function showMasterItem ( item ) {
         scope.items.forEach ( item => item.visible = false )
+        item.visible = true
         item.moveTo( 0, 0 )
         item.setSize( scope.width, scope.height )
         item.reset()
-        item.visible = true
     }
 
     function showStackItems( items ) {
@@ -113,6 +139,7 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
                 item.visible = true
                 item.setViewRect( scope.width, vh, scope.angle )
                 item.moveTo( 0, y )
+                item.control.enabled = true
                 y += vh
             } )
 
@@ -123,9 +150,25 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
                 item.visible = true
                 item.setViewRect( vw, scope.height, scope.angle )
                 item.moveTo( x, 0 )
+                item.control.enabled = true
                 x += vw
             } )
         }
+    }
+
+    function showOverlayItems( items ) {
+        let vw = 300
+        let vh = 180
+
+        let x = - scope.width / 2 + vw / 2
+        let y = scope.height / 2 - vh / 2
+        items.forEach( item => {
+            item.visible = true
+            item.moveTo( x, y )
+            item.setViewRect( vw, vh, Math.PI / 6 )
+            item.control.enabled = false
+            y -= vh
+        } )
     }
 
     function rearrange () {

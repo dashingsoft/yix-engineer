@@ -55,14 +55,12 @@ export default {
         onEventClick ( e ) {
             // e.preventDefault()
             e.stopPropagation()
-
             this.notifyEngineer( 'click', this, e )
         },
 
         onEventDoubleClick ( e ) {
             // e.preventDefault()
             e.stopPropagation()
-
             this.notifyEngineer( 'dblclick', this, e )
         },
 

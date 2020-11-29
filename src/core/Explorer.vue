@@ -5,7 +5,7 @@
         size="mini"
         @click="currentLayer = 0"
         :class="{ selected: activeLayer === 0 }">
-        物理层</el-button>
+        实体层</el-button>
       <el-button
         size="mini"
         @click="currentLayer = 1"
@@ -52,20 +52,19 @@
               </el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item
-                  icon="el-icon-check">
+                  :command="{ name: 'view', target: scope.row }">
                   当前视图
                 </el-dropdown-item>
                 <el-dropdown-item
-                  icon="el-icon-view"
-                  v-for="vv in scope.row.viewStack"
-                  :key="vv._uid"
-                  :command="{ action: 'toggle', item: vv }">
-                  {{ vv.title }}
+                  v-for="view in scope.row.viewStack"
+                  :key="view._uid"
+                  :command="{ name: 'view', target: view }">
+                  {{ view.title }}
                 </el-dropdown-item>
                 <el-dropdown-item divided></el-dropdown-item>
                 <el-dropdown-item
                   icon="el-icon-delete"
-                  :command="{ action: 'delete', item: scope.row }">
+                  :command="{ name: 'delete', target: scope.row }">
                   删除
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -147,12 +146,12 @@ export default {
         },
 
         handleItemCommand ( cmd ) {
-            if ( cmd.name === 'zoom' ) {
-                console.log( 'zoom ' + cmd.row.title )
+            if ( cmd.name === 'view' ) {
+                this.$emit( 'domain', 'show', cmd.target )
             }
-            else if ( cmd.name === 'delete' ) {
-                console.log( 'delete ' + cmd.row.title )
-            }
+
+            else if ( cmd.name === 'delete' )
+                this.$emit( 'domain', 'delete', cmd.target )
         },
 
     }

@@ -1,6 +1,6 @@
 <template>
-  <div class="i-view" v-bind:style="{ width: width + 'px', height: height + 'px' }">
-    <div>
+  <div class="i-view">
+    <div v-bind:style="{ width: width + 'px', height: height + 'px' }">
       <div class="i-part" v-bind:style="boardStyle">
         <RealProcessor :position="positions.processor"></RealProcessor>
         <RealMemory :position="positions.memory"></RealMemory>

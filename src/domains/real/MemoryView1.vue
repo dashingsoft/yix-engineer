@@ -33,6 +33,7 @@
 <script>
 import MixinView from "../../core/mixin/View.js"
 
+
 export default {
     mixins: [ MixinView ],
 
@@ -41,7 +42,7 @@ export default {
     props: {
         wordsize: {
             type: Number,
-            default: 32,
+            default: 16,
         },
         addr: {
             type: Number,
@@ -77,7 +78,7 @@ export default {
             title: '内存读写视图',
             msg: '内存',
             width: 300,
-            height: 1200,
+            height: 800,
         }
     },
 

@@ -5,7 +5,7 @@
 
 <script>
 import * as THREE from 'three'
-import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
+import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js'
 import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
 // import { CSS3DRenderer, CSS3DObject } from './CSS3DRenderer.js'
 import { MapControls as Controls } from './Controls.js'

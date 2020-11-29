@@ -3,7 +3,7 @@ import CoreView from './View.js'
 var BaseLayout = function ( width = 800, height = 600, options = {} ) {
 
     let scope = this
-    let items = []
+    let items = options.items === undefined ? [] : options.items
 
     // API
     this.items = items
