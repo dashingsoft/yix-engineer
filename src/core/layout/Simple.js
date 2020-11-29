@@ -123,7 +123,7 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
         item.visible = true
         item.moveTo( 0, 0 )
         item.setSize( scope.width, scope.height )
-        item.reset()
+        item.show()
     }
 
     function showStackItems( items ) {
@@ -134,12 +134,18 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
         scope.items.forEach ( item => item.visible = false )
 
         if ( _mode === MODE.COL2D || _mode === MODE.COL3D ) {
+            let x = - scope.width / 2 + vw / 2
             let y = - scope.height / 2 + vh / 2
             items.forEach( item => {
                 item.visible = true
-                item.setViewRect( scope.width, vh, scope.angle )
-                item.moveTo( 0, y )
-                item.control.enabled = true
+                item.show( {
+                    width: scope.width,
+                    height: vh,
+                    angle: MODE.COL2D ? 0 : scope.angle,
+                    direction: 'up'
+                } )
+                item.moveTo( x, y )
+                x += vw
                 y += vh
             } )
 
@@ -148,9 +154,12 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
             let x = - scope.width / 2 + vw / 2
             items.forEach( item => {
                 item.visible = true
-                item.setViewRect( vw, scope.height, scope.angle )
+                item.show( {
+                    width: vw,
+                    height: scope.height,
+                    angle: scope.angle,
+                } )
                 item.moveTo( x, 0 )
-                item.control.enabled = true
                 x += vw
             } )
         }

@@ -1219,11 +1219,12 @@ var MapControls = function ( object, domElement ) {
     this.touches.TWO = TOUCH.DOLLY_ROTATE;
 
     this.zoomSpeed = .26;
+    this.enableDamping = true
 
     // How far you can orbit vertically, upper and lower limits.
     // Range is 0 to Math.PI radians.
-    this.minPolarAngle = Math.PI / 2; // radians
-    this.maxPolarAngle = Math.PI / 2; // radians
+    this.minPolarAngle = Math.PI / 4; // radians
+    this.maxPolarAngle = Math.PI / 1.5; // radians
 
     // How far you can orbit horizontally, upper and lower limits.
     // If set, the interval [ min, max ] must be a sub-interval of [ - 2 PI, 2 PI ], with ( max - min < 2 PI )

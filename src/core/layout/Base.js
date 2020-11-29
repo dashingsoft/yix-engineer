@@ -13,15 +13,13 @@ var BaseLayout = function ( width = 800, height = 600, options = {} ) {
 
     this.findItem = function ( domain, created = false ) {
         if ( domain ) {
-            let source = domain.$root
             for ( let i = 0; i < items.length; i ++ )
-                if ( items[ i ].source === source )
+                if ( items[ i ].domain === domain.$root )
                     return items[ i ]
             if ( created ) {
                 let item = new CoreView( domain, {
                     width: scope.width,
                     height: scope.height,
-                    container: scope.container
                 } )
                 items.push( item )
                 return item

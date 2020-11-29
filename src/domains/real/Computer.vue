@@ -91,5 +91,7 @@ export default {
 <style scoped>
 .i-view {
     border: 1px solid #C0C4CC;
+    outline: 0;
+
 }
 </style>

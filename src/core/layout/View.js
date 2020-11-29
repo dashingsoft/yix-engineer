@@ -7,10 +7,12 @@ import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js'
 var View = function ( domain, options = {} ) {
 
     let scope = this
+
     let fov = options.fov === undefined ? 45 : options.fov
     let near = options.near === undefined ? 1 : options.near
     let far = options.far === undefined ? 10000 : options.far
     let background = options.background === undefined ? 0xf0f0f0 : options.background
+
     let left = options.left === undefined ? 0 : options.left
     let top = options.top === undefined ? 0 : options.top
     let width = options.width === undefined ? 800 : options.width
@@ -28,27 +30,24 @@ var View = function ( domain, options = {} ) {
     renderer.domElement.style.left = left + 'px'
     renderer.domElement.style.top = top + 'px'
 
-    if ( options.container )
-        options.container.appendChild ( renderer.domElement )
+    let relations = document.body.querySelector( 'i-relations' )
+    let container = document.body.querySelector( '.y-imager' )
+    container.appendChild ( renderer.domElement )
 
-    // let control = new Controls( camera, renderer.domElement )
-    let control = new Controls( camera, options.container )
-    control.enableDamping = true;
-
-    let violateContainer = document.createElement( 'div' )
-    document.body.appendChild( violateContainer )
+    let controls = [ new Controls( camera, domain.$el ), new Controls( camera, container ) ]
+    let _cindex = 0
 
     // API
-    this.width = width
-    this.height = height
+
+    this.left = left            // renderer left
+    this.top = top              // renderer right
+    this.width = width          // renderer width
+    this.height = height        // rendere height
+
+    this.domain = domain
     this.camera = camera
     this.scene = scene
     this.renderer = renderer
-    this.control = control
-    this.source = domain
-
-    this.left = left
-    this.top = top
 
     Object.defineProperty( this, 'visible', {
         get() {
@@ -60,16 +59,24 @@ var View = function ( domain, options = {} ) {
         }
     } )
 
+    Object.defineProperty( this, 'control', {
+        get() {
+            return controls[ _cindex ]
+        },
+        set( value ) {
+            _cindex = value === 'global' ? 1 : 0
+            controls.forEach( x => x.enabled = !! _cindex )
+            controls[ _cindex ].enabled = true
+        }
+    } )
+
     this.moveTo = function ( left, top ) {
         scope.left = left
         scope.top = top
         renderer.domElement.style.transform = 'translate(' + left + 'px,' + top + 'px)'
-        // renderer.domElement.style.left = left + 'px'
-        // renderer.domElement.style.top = top + 'px'
     }
 
     this.setSize = function ( width, height ) {
-
         if ( scope.width === width && scope.height === height )
             return
 
@@ -80,60 +87,28 @@ var View = function ( domain, options = {} ) {
 
         scope.width = width
         scope.height = height
-
     }
 
     this.render = function () {
-        control.update()
+        scope.control.update()
         renderer.render( scene, camera )
     }
 
     this.reset = function () {
-        control.enabled = true
-        setMainView()
+        scope.control = 'local'
+        scope.show()
     }
 
-    this.setViewRect = function ( vwidth, vheight, angle ) {
-        let target = new THREE.Vector3( 0, 0, 0 )
-        let [ w, h ] = getObjectSize()
-        let [ d, d1, d2 ] = getDistanceRange( w, h, vwidth, vheight )
-        control.reset()
+    this.show = function ( options = {} ) {
+        let vwidth = options.width ? options.width : scope.width
+        let vheight = options.height ? options.height : scope.height
+        let angle = options.angle ? options.angle : 0
+        let direction = options.direction ? options.direction : 'left'
+        let scale = options.scale ? options.scale : .8
 
-        scene.children.forEach( child => child.position.copy( target ) )
-        camera.lookAt( target )
-        camera.position.copy( target )
-        camera.position.x += d * Math.sin( angle )
-        camera.position.z = d * Math.cos( angle )
-        control.minDistance = d1
-        control.maxDistance = d2
-    }
-
-    this.createTweenApart = function ( refitem, duration = 3000 ) {
-        let element = scope.renderer.domElement
-        let transform = element.style.transform
-
-        return new TWEEN.Tween( {
-            scale: 0.01,
-            left: refitem.left,
-            top: refitem.top
-        } ).to( {
-            scale: 1.0,
-            left: scope.left,
-            top: scope.top
-        }, duration )
-            .onStart( () => {
-                scope.visible = true
-                control.enabled = false
-            } )
-            .onComplete( () => {
-                element.style.transform = transform
-                control.enabled = true
-            } )
-            .onUpdate( object => {
-                element.style.transform = 'translate(' + object.left + 'px, ' + object.top + 'px)' +
-                    ' scale(' + object.scale + ')'
-                console.log( element.style.transform )
-            } )
+        let pos = calculateCameraPosition( vwidth * scale, vheight * scale, angle, direction )
+        scope.control.reset()
+        camera.position.copy( pos )
     }
 
     this.createTweenFlowIn = function ( refel, duration = 2000 ) {
@@ -148,7 +123,7 @@ var View = function ( domain, options = {} ) {
         console.log( 'Got rect:' + JSON.stringify( rect ) )
         console.log( 'Got refrect:' + JSON.stringify( refrect ) )
 
-        let [ w, h ] = getObjectSize()
+        let [ w, h ] = getDomainSize()
         h = Math.min( h, scope.height )
         w = Math.min( w, scope.width )
         // let sx = refrect.width / w, sy = refrect.height / h
@@ -160,7 +135,7 @@ var View = function ( domain, options = {} ) {
         tempElement.style.transform = 'none'
         tempElement.style.transformOrigin = 'top left'
         tempElement.style.zIndex = 90
-        violateContainer.appendChild( tempElement )
+        relations.appendChild( tempElement )
         renderer.domElement.style.opacity = 0
 
         return new TWEEN.Tween( {
@@ -176,12 +151,12 @@ var View = function ( domain, options = {} ) {
         }, duration )
             .onStart( () => {
                 tempElement.style.opacity = 1
-                control.enabled = false
+                scope.control.enabled = false
             } )
             .onComplete( () => {
                 renderer.domElement.style.opacity = 1
-                violateContainer.removeChild( tempElement )
-                control.enabled = true
+                relations.removeChild( tempElement )
+                scope.control.enabled = true
             } )
             .onUpdate( object => {
                 console.log( object.left, object.top, object.sx, object.sy )
@@ -193,45 +168,67 @@ var View = function ( domain, options = {} ) {
 
     // Internal function
 
-    // function calculatePosition( distance, angle, horizion = true ) {
-    //     const quaternion = new THREE.Quaternion();
-    //     const axis = horizion ? new THREE.Vector3( 0, 1, 0 ) : new THREE.Vector3( 1, 0, 0 )
-    //     quaternion.setFromAxisAngle( axis, angle )
-    //     const pos = new THREE.Vector3( 0, 0, 1 )
-    //     pos.applyQuaternion( quaternion )
-    //     pos.setLength( distance )
-    //     return pos
-    // }
-
-    function calculateDistance ( width, height, vwidth, vheight ) {
-        let mx = scope.width / ( vwidth / 2 - margin )
-        let my = scope.height / ( vheight / 2 - margin )
-        return Math.max( mx * ( width / 2 - margin), my * ( height / 2 - margin ) )
-    }
-
-    function getObjectSize() {
+    function getDomainSize() {
         return [ domain.width ? domain.width : scope.width,
                  domain.height ? domain.height : scope.height ]
     }
 
-    function getDistanceRange ( width, height, vwidth, vheight ) {
-        let d = calculateDistance( width / .9, height / .9, vwidth, vheight )
-        let d1 = calculateDistance( width, height, vwidth, vheight )
-        let d2 = calculateDistance(  width * 4, height * 4, vwidth, vheight )
-        return [d, d1, d2]
+    function calculateDistanceFitView ( width, height, vwidth, vheight ) {
+        let fa = Math.tan( fov / 180 * Math.PI )
+        return Math.max( scope.width / fa / ( vwidth - margin ) * width,
+                         scope.height / fa / ( vheight - margin ) * height )
     }
 
-    function setMainView () {
-        let [ w, h ] = getObjectSize()
-        let [ d, d1, d2 ] = getDistanceRange( w, h, scope.width, scope.height )
-        control.reset()
+    function calculateCameraPosition( vwidth, vheight, angle = 0, direction = 'left' ) {
+        let size = getDomainSize()
+        let distance = calculateDistanceFitView( size[ 0 ], size[ 1 ], vwidth, vheight )
 
-        scene.children.forEach( child => child.position.set( 0, 0, 0 ) )
-        camera.lookAt( 0, 0, 0 )
-        camera.position.set( 0, 0, d )
-        control.minDistance = d1
-        control.maxDistance = d2
+        const quaternion = new THREE.Quaternion();
+        const axis = direction === 'left' ? new THREE.Vector3( 0, 1, 0 )
+              : direction === 'right' ? new THREE.Vector3( 0, -1, 0 )
+              : direction === 'up' ? new THREE.Vector3( 1, 0, 0 )
+              : new THREE.Vector3( -1, 0, 0 )
+        quaternion.setFromAxisAngle( axis, angle )
+        const pos = new THREE.Vector3( 0, 0, 1 )
+        pos.applyQuaternion( quaternion )
+        pos.setLength( distance )
+
+        return pos
     }
+
+    // this.setViewRect = function ( vwidth, vheight, angle ) {
+    //     let target = new THREE.Vector3( 0, 0, 0 )
+    //     let [ w, h ] = getDomainSize()
+    //     let [ d, d1, d2 ] = getDistanceRange( w, h, vwidth, vheight )
+    //     scope.control.reset()
+
+    //     scene.children.forEach( child => child.position.copy( target ) )
+    //     camera.lookAt( target )
+    //     camera.position.copy( target )
+    //     camera.position.x += d * Math.sin( angle )
+    //     camera.position.z = d * Math.cos( angle )
+    //     scope.control.minDistance = d1
+    //     scope.control.maxDistance = d2
+    // }
+
+    // function getDistanceRange ( width, height, vwidth, vheight ) {
+    //     let d = calculateDistanceFitView( width / .9, height / .9, vwidth, vheight )
+    //     let d1 = calculateDistanceFitView( width, height, vwidth, vheight )
+    //     let d2 = calculateDistanceFitView(  width * 4, height * 4, vwidth, vheight )
+    //     return [d, d1, d2]
+    // }
+
+    // function setMainView () {
+    //     let [ w, h ] = getDomainSize()
+    //     let [ d, d1, d2 ] = getDistanceRange( w, h, scope.width, scope.height )
+    //     scope.control.reset()
+
+    //     scene.children.forEach( child => child.position.set( 0, 0, 0 ) )
+    //     camera.lookAt( 0, 0, 0 )
+    //     camera.position.set( 0, 0, d )
+    //     scope.control.minDistance = d1
+    //     scope.control.maxDistance = d2
+    // }
 
     // function debugShowRect( rect, color ) {
     //     var tableRectDiv = document.createElement('div');
@@ -254,38 +251,39 @@ var View = function ( domain, options = {} ) {
         if ( el ) {
             let rects = el.getClientRects()
             if ( rects.length > 0 ) {
-                let rect = {
-                    left: 0,
-                    top: 0,
-                    width: 0,
-                    height: 0
-                }
-                rects.forEach( child => {
-                    if ( child.left > rect.left )
-                        rect.left = Math.round( child.left )
-                    if ( child.top > rect.top )
-                        rect.top = Math.round( child.top )
-                    if ( child.width > rect.width )
-                        rect.width = Math.round( child.width )
-                    if ( child.height > rect.height )
-                        rect.height = Math.round( child.height )
+                let left = rects[ 0 ].left
+                let right = rects[ 0 ].right
+                let top = rects[ 0 ].top
+                let bottom = rects[ 0 ].bottom
+                rects.forEach( item => {
+                    left = item.left < left ? item.left : left
+                    right = item.right < right ? item.right : right
+                    top = item.top < top ? item.top : top
+                    bottom = item.bottom < bottom ? item.bottom : bottom
                 } )
-                return rect
+                return {
+                    left: left,
+                    right: right,
+                    top: top,
+                    bottom: bottom,
+                    width: right - left,
+                    height: bottom - top
+                }
             }
 
-            if ( el.parentElement ) {
+            let parent = el.parentElement
+            if ( parent ) {
                 let index = 0
-                while ( el.parentElement.children[ index ] !== el ) index ++
-                let rects = el.parentElement.getClientRects()
-                return rects[ index ]
+                while ( parent.children[ index ] !== this.$el ) index ++
+                return parent.getClientRects()[ index ]
             }
-
         }
     }
 
-    let el = options.clone ? new domain.$el.cloneNode ( true ) : domain.$el
-    scene.add( new CSS3DObject( el ) )
-    setMainView()
+    // Finally setup
+    scope.control = options.control ? options : 'local'
+    scene.add( new CSS3DObject( domain.$el ) )
+    this.show()
 }
 
 View.prototype = Object.create( {} )

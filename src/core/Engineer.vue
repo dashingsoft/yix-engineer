@@ -269,13 +269,13 @@ export default {
             this.onKeyup( e )
         } )
 
-        let domains = document.createElement( 'div' )
-        domains.className = 'x-full i-domains'
-        document.body.appendChild( domains )
+        this.i_domains = document.createElement( 'div' )
+        this.i_domains.className = 'x-full i-domains'
+        document.body.appendChild( this.i_domains )
 
-        let relations = document.createElement( 'div' )
-        relations.className = 'i-relations'
-        document.body.appendChild( relations )
+        this.i_relations = document.createElement( 'div' )
+        this.i_relations.className = 'i-relations'
+        document.body.appendChild( this.i_relations )
 
         this.$on( 'living', this.onEventLiving )
         this.$on( 'page', this.onEventPage )
