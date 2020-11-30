@@ -1,7 +1,7 @@
-import Common from './Common.js'
+import Base from './Base.js'
 
 export default {
-    mixins: [ Common ],
+    mixins: [ Base ],
 
     props: {
         basestone: Object

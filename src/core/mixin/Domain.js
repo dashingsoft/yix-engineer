@@ -22,11 +22,11 @@
 // 所有以 doActionXXXX 的方法用于执行实际的工作
 //
 //
-import Common from './Common.js'
+import Base from './Base.js'
 import Action from '../medium/Action.js'
 
 export default {
-    mixins: [ Common ],
+    mixins: [ Base ],
 
     data () {
         return {
