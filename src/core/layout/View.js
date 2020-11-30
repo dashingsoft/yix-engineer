@@ -55,6 +55,7 @@ var View = function ( domain, options = {} ) {
         },
         set( visible ) {
             scene.visible = visible
+            domain.visible = visible
             renderer.domElement.style.display = visible ? '' : 'none'
         }
     } )

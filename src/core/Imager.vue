@@ -127,8 +127,7 @@ export default {
                 renderer2.render( idleScene, idleCamera )
 
             this.layouts.forEach( layout => {
-                if ( layout.visible )
-                    layout.render()
+                layout.render()
             } )
         },
 

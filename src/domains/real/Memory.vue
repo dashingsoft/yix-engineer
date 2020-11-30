@@ -61,6 +61,17 @@ export default {
         view2.$mount()
         this.viewStack.push( view2 )
     },
+
+    methods: {
+
+        doActionRead ( addr, size ) {
+        },
+
+        doActionWrite ( addr, size, value ) {
+        },
+
+    },
+
 }
 </script>
 

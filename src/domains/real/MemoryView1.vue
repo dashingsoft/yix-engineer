@@ -40,7 +40,7 @@ export default {
     props: {
         wordSize: {
             type: Number,
-            default: 32,
+            default: 16,
         },
         addr: {
             type: Number,

@@ -11,6 +11,7 @@ export default {
     mixins: [ MixinDomain, MixinEntity ],
 
     name: 'RealProcessor',
+
     props: {
         position: Array,
     },
@@ -18,8 +19,10 @@ export default {
     data() {
         return {
             title: "处理器",
+            wordSize: 16,
         }
     },
+
     computed: {
         style () {
             return {
@@ -29,7 +32,20 @@ export default {
                 height: '40px',
             }
         }
-    }
+    },
+
+    methods: {
+
+        // 指令 Mov
+        doActionMov ( reg, addr ) {
+        },
+
+        // 指令 Add
+        doActionAdd ( reg, addr ) {
+        },
+
+    },
+
 }
 </script>
 

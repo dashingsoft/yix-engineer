@@ -42,7 +42,7 @@
       </template>
     </CoreView>
     <CoreImager
-      :layouts="layouts"
+      :layouts="activeLayouts"
       :scenes="scenes"
       @imager="onEventImager"
       ref="imager"></CoreImager>
@@ -69,7 +69,7 @@
       <LayoutPage
         v-if="pageVisible.layout"
         @page="onEventPage"
-        :layouts="layouts"></LayoutPage>
+        :layouts="activeLayouts"></LayoutPage>
       <ScenesPage
         v-if="pageVisible.scenes"
         @page="onEventPage"
@@ -105,7 +105,8 @@ import ScenesPage from './Scenes.vue'
 import Livingbar from './Livingbar.vue'
 import CoreImager from './Imager.vue'
 
-import SimpleLayout from './layout/Simple.js'
+import Manager from './layout/Manager.js'
+// import SimpleLayout from './layout/Simple.js'
 // import OverlayLayout from './layout/Overlay.js'
 // import LayerLayout from './layout/Layer.js'
 
@@ -193,8 +194,8 @@ export default {
             frameStack: [],
 
             // 视图，每一个视图都是一个或者多个视图的集合
-            layouts: [],
-            currentLayout: null,
+            activeLayouts: [],
+            manager: null,
 
             // 使命和目标
             missions: [],
@@ -258,12 +259,8 @@ export default {
         window.addEventListener( 'resize', this.onWindowResize, false )
 
         let rect = this.viewRects[ this.mode ]
-        this.currentLayout = new SimpleLayout( rect.width, rect.height, {
-            container: this.imager.$el,
-            items: this.scenes
-        } )
-        this.currentLayout.visible = true
-        this.layouts.push( this.currentLayout )
+        this.manager = new Manager( rect.width, rect.height, this.scenes )
+        this.activeLayouts.push( this.manager )
 
         document.addEventListener( 'keyup', e => {
             this.onKeyup( e )
@@ -297,7 +294,7 @@ export default {
 
             this.state = STATE.Ready
 
-            this.currentLayout.watchDomainMain( this.mainDomain )
+            this.manager.watchDomainMain( this.mainDomain )
             this.imager.toggleBusy( true )
         },
 
@@ -324,19 +321,19 @@ export default {
         },
 
         createLayout () {
-            let rect = this.viewRects[ this.mode ]
-            this.layouts.push( new SimpleLayout( rect.width, rect.height, this.imager.$el ) )
+            // let rect = this.viewRects[ this.mode ]
+            // this.layouts.push( new SimpleLayout( rect.width, rect.height, this.imager.$el ) )
         },
 
         selectLayout ( index ) {
-            this.currentLayout.visible = false
-            this.currentLayout = this.layouts[ index ]
-            this.currentLayout.visible = true
+            // this.currentLayout.visible = false
+            // this.currentLayout = this.layouts[ index ]
+            // this.currentLayout.visible = true
         },
 
         removeLayout ( index ) {
-            if ( this.layouts.length > 1 ) {
-                let layout = this.layouts.splice( index, 1 )
+            if ( this.activeLayouts.length > 1 ) {
+                let layout = this.activeLayouts.splice( index, 1 )
                 if ( layout.visible )
                     this.selectLayout( 0 )
             }
@@ -487,12 +484,12 @@ export default {
             }
 
             else if ( action === 'detail' ) {
-                this.currentLayout.watchDomainDetails ( value, this.runOptions.overlayMode )
+                this.manager.watchDomainDetails ( value, this.runOptions.overlayMode )
             }
 
             else if ( action === 'show' ) {
                 console.log( 'show view ' + value.title )
-                this.currentLayout.watchDomainMain ( value )
+                this.manager.watchDomainMain ( value )
             }
 
             else if ( action === 'delete' ) {
@@ -500,7 +497,7 @@ export default {
             }
 
             else if ( action === 'stack' ) {
-                this.currentLayout.watchDomainStack ( value )
+                this.manager.watchDomainStack ( value )
             }
         },
 
@@ -508,7 +505,7 @@ export default {
 
             if ( action === 'select' ) {
                 console.log( oldValue.title )
-                this.currentLayout.watchDomainMain( value )
+                this.manager.watchDomainMain( value )
             }
 
         },
