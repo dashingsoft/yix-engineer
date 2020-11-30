@@ -30,15 +30,21 @@
 </template>
 
 <script>
+import MixinView from "../../core/mixin/View.js"
+
 
 export default {
+    mixins: [ MixinView ],
+
     name: 'RealMemoryView2',
+
     data() {
         return {
             title: '内存数据视图',
             tableData: [],
         }
     },
+
     mounted () {
         this.tableData.push( {
             addr: '0x000001',

@@ -1,6 +1,6 @@
 <template>
   <div class="i-view">
-    <div v-bind:style="{ width: width + 'px', height: height + 'px' }">
+    <div class="m-view" v-bind:style="{ width: width + 'px', height: height + 'px' }">
       <div class="i-part" v-bind:style="boardStyle">
         <RealProcessor :position="positions.processor"></RealProcessor>
         <RealMemory :position="positions.memory"></RealMemory>
@@ -90,7 +90,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .i-view {
-    border: 1px solid #C0C4CC;
+    border: 2px solid #C0C4CC;
     outline: 0;
 
 }

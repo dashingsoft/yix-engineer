@@ -12,9 +12,7 @@
         </div>
       </div>
       <div class="m-body">
-        <div>{{ displayAddr }}</div>
-        <div>{{ msg }}</div>
-        <div>{{ displayValue }} </div>
+        <div>{{ title }}</div>
       </div>
       <div>
         <div class="i-pin">
@@ -40,9 +38,9 @@ export default {
     name: 'RealMemoryView1',
 
     props: {
-        wordsize: {
+        wordSize: {
             type: Number,
-            default: 16,
+            default: 32,
         },
         addr: {
             type: Number,
@@ -58,7 +56,7 @@ export default {
 
         items () {
             let a = []
-            for ( let i = 0; i < this.wordsize; i ++ )
+            for ( let i = 0; i < this.wordSize; i ++ )
                 a.push( i )
             return a
         },
@@ -71,14 +69,14 @@ export default {
             return '数据 ' + this.value.toString()
         },
 
+        scrollHeight () {
+            return this.wordSize === 16 ? 800 : 1200
+        }
     },
 
     data() {
         return {
             title: '内存读写视图',
-            msg: '内存',
-            width: 300,
-            height: 800,
         }
     },
 

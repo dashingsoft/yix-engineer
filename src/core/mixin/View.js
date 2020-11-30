@@ -1,4 +1,7 @@
+import Common from './Common.js'
+
 export default {
+    mixins: [ Common ],
 
     props: {
         basestone: Object
@@ -6,8 +9,6 @@ export default {
 
     data () {
         return {
-            // 绑定的 scene ，用来在 Imager 中显示
-            scene: undefined,
         }
     },
 

@@ -56,4 +56,4 @@ var Action = function ( target, name, args, options ) {
 Action.prototype = Object.create( {} )
 Action.prototype.constructor = Action;
 
-export { Action };
+export default Action;

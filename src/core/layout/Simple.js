@@ -21,7 +21,7 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
     let scope = this
 
     let _mode = options.mode === undefined ? MODE.MASTER : options.mode
-    let _angle = options.angle === undefined ? Math.PI / 8 : options.angle
+    let _angle = options.angle === undefined ? 25 : options.angle
     let _main = options.main
 
     // Property
@@ -101,18 +101,26 @@ var SimpleLayout = function ( width = 800, height = 600, options = {} ) {
             return scope.watchDomainMain( domain )
 
         items.splice( 0, 0, scope.findItem( domain, true ) )
-        showStackItems( items )
+        let index = items.indexOf( _main )
+        index ++
+        if ( index > domain.viewStack.length )
+            index = 0
+        if ( ! index )
+            return scope.watchDomainMain( domain )
 
-        let elements = domain.viewStack.map( v => v.$el )
-        elements.splice( 0, 0, domain.$el )
+        showStackItems( items )
+        items.slice( index ).forEach( item => item.renderer.domElement.style.opacity = 0 )
+
+        let refel = index === 1 ? domain.$el : domain.viewStack[ index - 2 ].$el
+        let item = items[ index ]
         domain.$nextTick( () => {
-            let tweens = items.slice( 1 ).map( ( item, index ) => {
-                return item.createTweenFlowIn( elements[ index ] )
-            } )
-            if ( tweens.indexOf( undefined ) === -1 ) {
-                tweens.slice( 0, -1 ).forEach( ( item, index ) => item.chain( tweens[ index + 1 ] ) )
-                tweens[ 0 ].start()
-            }
+            window.setTimeout( () => {
+                let tween = item.createTweenFlowIn( refel )
+                if ( tween ) {
+                    tween.start()
+                    _main = items[ index ]
+                }
+            }, 100 )
         } )
     }
 

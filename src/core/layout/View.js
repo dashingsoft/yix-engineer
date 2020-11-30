@@ -30,7 +30,7 @@ var View = function ( domain, options = {} ) {
     renderer.domElement.style.left = left + 'px'
     renderer.domElement.style.top = top + 'px'
 
-    let relations = document.body.querySelector( 'i-relations' )
+    let relations = document.body.querySelector( '.i-relations' )
     let container = document.body.querySelector( '.y-imager' )
     container.appendChild ( renderer.domElement )
 
@@ -65,8 +65,8 @@ var View = function ( domain, options = {} ) {
         },
         set( value ) {
             _cindex = value === 'global' ? 1 : 0
-            controls.forEach( x => x.enabled = !! _cindex )
-            controls[ _cindex ].enabled = true
+            // controls.forEach( x => x.enabled = !! _cindex )
+            // controls[ _cindex ].enabled = true
         }
     } )
 
@@ -111,58 +111,47 @@ var View = function ( domain, options = {} ) {
         camera.position.copy( pos )
     }
 
-    this.createTweenFlowIn = function ( refel, duration = 2000 ) {
+    this.createTweenFlowIn = function ( refel, options = {} ) {
         let el = scene.children[ 0 ].element
         let refrect = getScreenRect( refel )
         let rect = getScreenRect( el )
         if ( refrect === undefined || rect === undefined ) {
             console.log('无法得到位置信息')
-                        return
+            return
         }
 
-        console.log( 'Got rect:' + JSON.stringify( rect ) )
-        console.log( 'Got refrect:' + JSON.stringify( refrect ) )
+        let duration = options.duration === undefined ? 2000 : options.duration
+        let angle = options.angle === undefined ? 0 : options.angle
+        let direction = options.direction === undefined ? 'left' : options.direction
 
         let [ w, h ] = getDomainSize()
-        h = Math.min( h, scope.height )
-        w = Math.min( w, scope.width )
-        // let sx = refrect.width / w, sy = refrect.height / h
         let tempElement = el.cloneNode( true )
-        tempElement.style.position = 'absolute'
+        tempElement.className = 'i-relation'
         tempElement.style.left = refrect.left + 'px'
         tempElement.style.top = refrect.top + 'px'
-        tempElement.style.opacity = 0
-        tempElement.style.transform = 'none'
-        tempElement.style.transformOrigin = 'top left'
-        tempElement.style.zIndex = 90
+        tempElement.style.width = w + 'px'
+        tempElement.style.height = h + 'px'
         relations.appendChild( tempElement )
-        renderer.domElement.style.opacity = 0
 
         return new TWEEN.Tween( {
             left: 0,
             top: 0,
-            sx: refrect.width / w,
-            sy: refrect.height / h,
+            sa: Math.min( refrect.width / w, refrect.height / h ),
         } ).to( {
             left: rect.left - refrect.left,
             top: rect.top - refrect.top,
-            sx: rect.width / w,
-            sy: rect.height / h,
+            sa: Math.max( rect.width / w , rect.height / h ),
         }, duration )
             .onStart( () => {
-                tempElement.style.opacity = 1
-                scope.control.enabled = false
             } )
             .onComplete( () => {
                 renderer.domElement.style.opacity = 1
                 relations.removeChild( tempElement )
-                scope.control.enabled = true
             } )
             .onUpdate( object => {
-                console.log( object.left, object.top, object.sx, object.sy )
                 tempElement.style.transform =
-                    'translate(' + object.left + 'px, ' + object.top + 'px) '
-                     + 'scale(' + object.sx + ',' + object.sy + ')'
+                    'translate(' + object.left + 'px, ' + object.top + 'px) ' +
+                    'scale(' + object.sa + ')'
             } )
     }
 
@@ -188,7 +177,7 @@ var View = function ( domain, options = {} ) {
               : direction === 'right' ? new THREE.Vector3( 0, -1, 0 )
               : direction === 'up' ? new THREE.Vector3( 1, 0, 0 )
               : new THREE.Vector3( -1, 0, 0 )
-        quaternion.setFromAxisAngle( axis, angle )
+        quaternion.setFromAxisAngle( axis, angle / 180 * Math.PI )
         const pos = new THREE.Vector3( 0, 0, 1 )
         pos.applyQuaternion( quaternion )
         pos.setLength( distance )
@@ -230,22 +219,22 @@ var View = function ( domain, options = {} ) {
     //     scope.control.maxDistance = d2
     // }
 
-    // function debugShowRect( rect, color ) {
-    //     var tableRectDiv = document.createElement('div');
-    //     tableRectDiv.className = 'i-violate'
-    //     tableRectDiv.style.position = 'absolute';
-    //     tableRectDiv.style.zIndex = 99;
-    //     tableRectDiv.style.border = '1px solid ' + (color === undefined ? 'red' : color);
-    //     var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    //     var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
-    //     tableRectDiv.style.margin = tableRectDiv.style.padding = '0';
-    //     tableRectDiv.style.top = (rect.top + scrollTop) + 'px';
-    //     tableRectDiv.style.left = (rect.left + scrollLeft) + 'px';
-    //     // We want rect.width to be the border width, so content width is 2px less.
-    //     tableRectDiv.style.width = (rect.width - 2) + 'px';
-    //     tableRectDiv.style.height = (rect.height - 2) + 'px';
-    //     document.body.appendChild(tableRectDiv);
-    // }
+    function debugShowRect( rect, color ) {
+        var tableRectDiv = document.createElement('div');
+        tableRectDiv.className = 'i-violate'
+        tableRectDiv.style.position = 'absolute';
+        tableRectDiv.style.zIndex = 99;
+        tableRectDiv.style.border = '1px solid ' + (color === undefined ? 'red' : color);
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+        tableRectDiv.style.margin = tableRectDiv.style.padding = '0';
+        tableRectDiv.style.top = (rect.top + scrollTop) + 'px';
+        tableRectDiv.style.left = (rect.left + scrollLeft) + 'px';
+        // We want rect.width to be the border width, so content width is 2px less.
+        tableRectDiv.style.width = (rect.width - 2) + 'px';
+        tableRectDiv.style.height = (rect.height - 2) + 'px';
+        document.body.appendChild(tableRectDiv);
+    }
 
     function getScreenRect( el ) {
         if ( el ) {

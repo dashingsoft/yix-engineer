@@ -269,9 +269,9 @@ export default {
             this.onKeyup( e )
         } )
 
-        this.i_domains = document.createElement( 'div' )
-        this.i_domains.className = 'x-full i-domains'
-        document.body.appendChild( this.i_domains )
+        this.y_domains = document.createElement( 'div' )
+        this.y_domains.className = 'x-full y-domains'
+        document.body.appendChild( this.y_domains )
 
         this.i_relations = document.createElement( 'div' )
         this.i_relations.className = 'i-relations'
@@ -569,6 +569,11 @@ export default {
     flex-grow: 1;
 }
 
+.y-domains {
+    opacity: 0;
+    z-index: -1;
+}
+
 .x-full {
     position: absolute;
     left: 0;
@@ -596,13 +601,8 @@ export default {
 
 .i-relation {
     position: absolute;
-    transform-origin: top left;
+    transform-origin: left top;
     z-index: 90;
-}
-
-.i-domains {
-    opacity: 0;
-    z-index: -1;
 }
 
 .i-layer0 {
