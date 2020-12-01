@@ -57,7 +57,11 @@ export default {
         this.viewStack.push( view1 )
 
         let realMemoryView2 = Vue.extend( RealMemoryView2 )
-        let view2 = new realMemoryView2()
+        let view2 = new realMemoryView2( {
+            propsData: {
+                basestone: this
+            }
+        } )
         view2.$mount()
         this.viewStack.push( view2 )
     },

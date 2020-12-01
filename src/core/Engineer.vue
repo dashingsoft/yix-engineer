@@ -87,6 +87,7 @@
         @page="onEventPage"
         v-if="pageVisible.settings"></StartPage>
     </div>
+    <Speaker></Speaker>
   </div>
 </template>
 
@@ -104,12 +105,12 @@ import ScenesPage from './Scenes.vue'
 
 import Livingbar from './Livingbar.vue'
 import CoreImager from './Imager.vue'
+import Speaker from './Speaker.vue'
 
 import Manager from './layout/Manager.js'
 // import SimpleLayout from './layout/Simple.js'
 // import OverlayLayout from './layout/Overlay.js'
 // import LayerLayout from './layout/Layer.js'
-
 
 const MODE = {
     Normal: 0,
@@ -144,6 +145,7 @@ export default {
         ScenesPage,
 
         Livingbar,
+        Speaker,
         CoreImager
     },
 

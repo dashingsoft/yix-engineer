@@ -134,14 +134,21 @@ var View = function ( domain, options = {} ) {
         tempElement.style.height = h + 'px'
         relations.appendChild( tempElement )
 
+        // console.log( w, h, refrect.width, refrect.height, rect.width, rect.height )
+        // debugShowRect( rect )
+
         return new TWEEN.Tween( {
             left: 0,
             top: 0,
-            sa: Math.min( refrect.width / w, refrect.height / h ),
+            // sa: Math.min( refrect.width / w, refrect.height / h ),
+            sx: refrect.width / w,
+            sy: refrect.height / h,
         } ).to( {
             left: rect.left - refrect.left,
             top: rect.top - refrect.top,
-            sa: Math.max( rect.width / w , rect.height / h ),
+            // sx: Math.min( rect.width / w , rect.height / h ),
+            sx: rect.width / w,
+            sy: rect.height / h,
         }, duration )
             .onStart( () => {
             } )
@@ -152,7 +159,7 @@ var View = function ( domain, options = {} ) {
             .onUpdate( object => {
                 tempElement.style.transform =
                     'translate(' + object.left + 'px, ' + object.top + 'px) ' +
-                    'scale(' + object.sa + ')'
+                    'scale(' + object.sx + ',' + object.sy + ')'
             } )
     }
 

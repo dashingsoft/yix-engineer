@@ -28,6 +28,12 @@ import Action from '../medium/Action.js'
 export default {
     mixins: [ Base ],
 
+    computed: {
+        domainChildren () {
+            return this.$children.filter( child => [-1, 0, 1].indexOf( child.layer ) > -1 )
+        }
+    },
+
     data () {
         return {
             // 域空间的层次

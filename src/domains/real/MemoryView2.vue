@@ -5,33 +5,16 @@
         <span>{{ title }}</span>
       </div>
       <div class="m-body">
-        <div class="m-addr">
-        </div>
-        <div class="m-data">
-        </div>
+        <span v-for="(node, index) in memnodes" :key="index">
+          {{ node }}
+        </span>
       </div>
-      <el-table
-        size="medium"
-        empty-text=""
-        :data="tableData">
-        <el-table-column
-          header-align="center"
-          prop="addr"
-          label="地址">
-        </el-table-column>
-        <el-table-column
-          header-align="center"
-          prop="value"
-          label="数据">
-        </el-table-column>
-      </el-table>
     </div>
   </div>
 </template>
 
 <script>
 import MixinView from "../../core/mixin/View.js"
-
 
 export default {
     mixins: [ MixinView ],
@@ -41,65 +24,21 @@ export default {
     data() {
         return {
             title: '内存数据视图',
-            tableData: [],
+            memnodes: [],
         }
     },
 
     mounted () {
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-        this.tableData.push( {
-            addr: '0x000001',
-            value: '18Af0882'
-        } )
-    },
+        for ( let i = 0; i < 640 ; i ++ )
+            this.memnodes.push( Math.random() > 0.5 ? 1 : 0 )
+    }
+
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .m-view {
-    width: 360px;
-    padding: 16px;
-    max-height: 100%;
 }
 
 .m-header {
@@ -110,8 +49,14 @@ export default {
 }
 
 .m-body {
-    display: flex;
-    flex-direction: column;
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #909399;
+}
+
+.m-body span {
+    width: 16px;
+    height: 16px;
 }
 
 </style>

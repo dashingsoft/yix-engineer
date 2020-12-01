@@ -21,7 +21,7 @@
       :highlight-current-row="true"
       :data="tableData"
       @current-change="onCurrentChanged"
-      :tree-props="{children: '$children'}">
+      :tree-props="{children: 'domainChildren'}">
       <el-table-column
         prop="title"
         width="auto">

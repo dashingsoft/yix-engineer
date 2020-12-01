@@ -70,7 +70,7 @@ export default {
         },
 
         scrollHeight () {
-            return this.wordSize === 16 ? 800 : 1200
+            return this.wordSize === 16 ? 600 : 1200
         }
     },
 

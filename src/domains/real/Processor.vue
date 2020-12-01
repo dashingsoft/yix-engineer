@@ -20,6 +20,8 @@ export default {
         return {
             title: "处理器",
             wordSize: 16,
+            status: '开始执行指令',
+            message: 'MOV EAX, [0x00F28098]',
         }
     },
 
