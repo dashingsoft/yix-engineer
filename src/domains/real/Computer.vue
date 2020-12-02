@@ -92,6 +92,5 @@ export default {
 .i-view {
     border: 2px solid #C0C4CC;
     outline: 0;
-
 }
 </style>

@@ -130,8 +130,6 @@ var View = function ( domain, options = {} ) {
         tempElement.className = 'i-relation'
         tempElement.style.left = refrect.left + 'px'
         tempElement.style.top = refrect.top + 'px'
-        tempElement.style.width = w + 'px'
-        tempElement.style.height = h + 'px'
         relations.appendChild( tempElement )
 
         // console.log( w, h, refrect.width, refrect.height, rect.width, rect.height )

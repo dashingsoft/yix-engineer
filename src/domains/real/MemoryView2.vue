@@ -5,9 +5,19 @@
         <span>{{ title }}</span>
       </div>
       <div class="m-body">
-        <span v-for="(node, index) in memnodes" :key="index">
-          {{ node }}
-        </span>
+        <el-table
+          :data="tableData"
+          :show-header="false"
+          :cell-style="cellStyle"
+          border>
+          <el-table-column
+            v-for="index in Array( cols )"
+            :key="index"
+            size="mini"
+            align="center"
+            width="20">
+          </el-table-column>
+        </el-table>
       </div>
     </div>
   </div>
@@ -24,21 +34,33 @@ export default {
     data() {
         return {
             title: '内存数据视图',
-            memnodes: [],
+            rows: 20,
+            cols: 16,
+            tableData: [],
         }
     },
 
     mounted () {
-        for ( let i = 0; i < 640 ; i ++ )
-            this.memnodes.push( Math.random() > 0.5 ? 1 : 0 )
-    }
+        for ( let i = 0; i < this.rows ; i ++ ) {
+            let row = []
+            for ( let j = 0; j < this.cols; j ++ )
+                row.push( Math.random() > 0.5 ? 1 : 0 )
+            this.tableData.push( row )
+        }
+    },
 
+    methods: {
+        cellStyle ( data ) {
+            return data.row[ data.columnIndex ] ? { backgroundColor: '#909399' } : {}
+        }
+    }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.m-view {
+.m-body {
+  width: 100%;
 }
 
 .m-header {
@@ -47,16 +69,4 @@ export default {
     text-align: center;
     padding: 16px;
 }
-
-.m-body {
-    width: 100%;
-    padding: 16px;
-    border: 1px solid #909399;
-}
-
-.m-body span {
-    width: 16px;
-    height: 16px;
-}
-
 </style>

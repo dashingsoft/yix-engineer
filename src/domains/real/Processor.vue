@@ -4,8 +4,13 @@
 </template>
 
 <script>
+import Vue from "vue"
+
 import MixinDomain from "../../core/mixin/Domain.js"
 import MixinEntity from "../../core/mixin/Entity.js"
+
+import ProcessorView from './ProcessorView.vue'
+
 
 export default {
     mixins: [ MixinDomain, MixinEntity ],
@@ -34,6 +39,17 @@ export default {
                 height: '40px',
             }
         }
+    },
+
+    mounted() {
+        let ProcessorViewObject = Vue.extend( ProcessorView )
+        let view = new ProcessorViewObject( {
+            propsData: {
+                basestone: this
+            }
+        } )
+        view.$mount()
+        this.viewStack.push( view )
     },
 
     methods: {

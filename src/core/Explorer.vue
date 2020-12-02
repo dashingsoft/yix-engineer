@@ -178,10 +178,11 @@ export default {
     margin-left: 0;
     border-radius: 0;
     border-width: 0.5px;
+    background-color: #EBEEF5;
 }
 
 .y-explorer .x-header button.selected {
-    background-color: #EBEEF5;
+    background-color: unset;
 }
 
 .y-explorer .minibar {
