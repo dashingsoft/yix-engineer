@@ -12,7 +12,7 @@ import Vue from "vue"
 import MixinDomain from "../../core/mixin/Domain.js"
 import MixinSpirit from "../../core/mixin/Spirit.js"
 
-import VisualMemoryView1 from './MemoryView1.vue'
+import VisualMemoryView from './MemoryView.vue'
 
 
 export default {
@@ -27,8 +27,8 @@ export default {
         }
     },
     mounted() {
-        let visualMemoryView1 = Vue.extend( VisualMemoryView1 )
-        let view = new visualMemoryView1()
+        let VisualMemoryViewObject = Vue.extend( VisualMemoryView )
+        let view = new VisualMemoryViewObject()
         view.$mount()
         this.viewStack.push( view )
     },

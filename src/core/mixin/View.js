@@ -20,7 +20,7 @@ export default {
     methods: {
 
         onEventClick ( e ) {
-            this.basestone.notifyEngineer( 'click', this.basestone, e )
+            this.basestone.notifyEngineer( 'vclick', this, e )
             // e.preventDefault()
             e.stopPropagation()
         },

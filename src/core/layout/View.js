@@ -34,8 +34,7 @@ var View = function ( domain, options = {} ) {
     let container = document.body.querySelector( '.y-imager' )
     container.appendChild ( renderer.domElement )
 
-    let controls = [ new Controls( camera, domain.$el ), new Controls( camera, container ) ]
-    let _cindex = 0
+    let control = new Controls( camera, container )
 
     // API
 
@@ -60,17 +59,6 @@ var View = function ( domain, options = {} ) {
         }
     } )
 
-    Object.defineProperty( this, 'control', {
-        get() {
-            return controls[ _cindex ]
-        },
-        set( value ) {
-            _cindex = value === 'global' ? 1 : 0
-            // controls.forEach( x => x.enabled = !! _cindex )
-            // controls[ _cindex ].enabled = true
-        }
-    } )
-
     this.moveTo = function ( left, top ) {
         scope.left = left
         scope.top = top
@@ -91,12 +79,12 @@ var View = function ( domain, options = {} ) {
     }
 
     this.render = function () {
-        scope.control.update()
+        control.update()
         renderer.render( scene, camera )
     }
 
     this.reset = function () {
-        scope.control = 'local'
+        control = 'local'
         scope.show()
     }
 
@@ -108,7 +96,7 @@ var View = function ( domain, options = {} ) {
         let scale = options.scale ? options.scale : .8
 
         let pos = calculateCameraPosition( vwidth * scale, vheight * scale, angle, direction )
-        scope.control.reset()
+        control.reset()
         camera.position.copy( pos )
     }
 
@@ -195,15 +183,15 @@ var View = function ( domain, options = {} ) {
     //     let target = new THREE.Vector3( 0, 0, 0 )
     //     let [ w, h ] = getDomainSize()
     //     let [ d, d1, d2 ] = getDistanceRange( w, h, vwidth, vheight )
-    //     scope.control.reset()
+    //     control.reset()
 
     //     scene.children.forEach( child => child.position.copy( target ) )
     //     camera.lookAt( target )
     //     camera.position.copy( target )
     //     camera.position.x += d * Math.sin( angle )
     //     camera.position.z = d * Math.cos( angle )
-    //     scope.control.minDistance = d1
-    //     scope.control.maxDistance = d2
+    //     control.minDistance = d1
+    //     control.maxDistance = d2
     // }
 
     // function getDistanceRange ( width, height, vwidth, vheight ) {
@@ -216,13 +204,13 @@ var View = function ( domain, options = {} ) {
     // function setMainView () {
     //     let [ w, h ] = getDomainSize()
     //     let [ d, d1, d2 ] = getDistanceRange( w, h, scope.width, scope.height )
-    //     scope.control.reset()
+    //     control.reset()
 
     //     scene.children.forEach( child => child.position.set( 0, 0, 0 ) )
     //     camera.lookAt( 0, 0, 0 )
     //     camera.position.set( 0, 0, d )
-    //     scope.control.minDistance = d1
-    //     scope.control.maxDistance = d2
+    //     control.minDistance = d1
+    //     control.maxDistance = d2
     // }
 
     function debugShowRect( rect, color ) {
@@ -276,7 +264,6 @@ var View = function ( domain, options = {} ) {
     }
 
     // Finally setup
-    scope.control = options.control ? options : 'local'
     scene.add( new CSS3DObject( domain.$el ) )
     this.show()
 }

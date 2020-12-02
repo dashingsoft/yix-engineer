@@ -11,7 +11,7 @@
           A{{ index }}
         </div>
       </div>
-      <div class="m-body">
+      <div class="m-body i-chip">
         <div>{{ title }}</div>
       </div>
       <div>

@@ -1,6 +1,6 @@
 <template>
   <div class="i-view">
-    <div class="m-view">
+    <div class="m-view i-chip">
       <div class="m-body">
         <div class="m-left">
           <Register
@@ -141,6 +141,8 @@ export default {
     display: flex;
     flex-direction: row;
     align-items: stretch;
+
+    background-color: #F0F0F0;
 }
 
 .m-body .m-left {

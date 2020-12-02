@@ -10,9 +10,7 @@ import MixinDomain from "../../core/mixin/Domain.js"
 import MixinEntity from "../../core/mixin/Entity.js"
 
 import VisualMemory from '../visual/Memory.vue'
-
-import RealMemoryView1 from './MemoryView1.vue'
-import RealMemoryView2 from './MemoryView2.vue'
+import RealMemoryView from './MemoryView.vue'
 
 
 export default {
@@ -47,23 +45,14 @@ export default {
         memory.$mount()
         this.mapStack.push( memory )
 
-        let realMemoryView1 = Vue.extend( RealMemoryView1 )
-        let view1 = new realMemoryView1( {
+        let RealMemoryViewObject = Vue.extend( RealMemoryView )
+        let view = new RealMemoryViewObject( {
             propsData: {
                 basestone: this
             }
         } )
-        view1.$mount()
-        this.viewStack.push( view1 )
-
-        let realMemoryView2 = Vue.extend( RealMemoryView2 )
-        let view2 = new realMemoryView2( {
-            propsData: {
-                basestone: this
-            }
-        } )
-        view2.$mount()
-        this.viewStack.push( view2 )
+        view.$mount()
+        this.viewStack.push( view )
     },
 
     methods: {

@@ -8,24 +8,24 @@
       <template v-slot:toolbar>
         <el-button
           size="mini"
-          title="缩略图模式"
+          title="切换缩略图"
           :class="{ 'x-checked': runOptions.overlayMode }"
           @click="$emit( 'view', 'overlay' )"
           icon="el-icon-news"></el-button>
         <el-button
           size="mini"
-          title="关联图模式"
+          title="显示视图关联"
           :class="{ 'x-checked': runOptions.relationMode }"
           @click="$emit( 'view', 'relation' )"
           icon="el-icon-connection"></el-button>
         <el-button
           size="mini"
-          title="切换视图排列模式"
+          title="切换视图排列"
           @click="$emit( 'domain', 'stack', currentDomain )"
           icon="el-icon-copy-document"></el-button>
         <el-button
           size="mini"
-          title="切换多层视图模式"
+          title="切换多层视图"
           @click="$emit( 'view', 'layer' )"
           icon="el-icon-coin"></el-button>
       </template>
@@ -486,7 +486,7 @@ export default {
             }
 
             else if ( action === 'detail' ) {
-                this.manager.watchDomainDetails ( value, this.runOptions.overlayMode )
+                this.manager.watchDomainStack ( value )
             }
 
             else if ( action === 'show' ) {
@@ -515,8 +515,11 @@ export default {
         onEventView ( action ) {
             if ( action === 'overlay' )
                 this.runOptions.overlayMode = ! this.runOptions.overlayMode
-            else if ( action === 'relation' )
-                this.runOptions.relationMode = ! this.runOptions.relationMode
+            else if ( action === 'relation' ) {
+                // this.runOptions.relationMode = ! this.runOptions.relationMode
+                if ( this.currentDomain )
+                    this.manager.watchDomainDetails ( this.currentDomain )
+            }
         },
 
         onEventEngineer ( action, obj, arg ) {
@@ -525,6 +528,10 @@ export default {
             }
             else if ( action === 'dblclick' ) {
                 console.log( 'dblclick ' + arg )
+            }
+            else if ( action === 'vclick' ) {
+                this.explorer.setCurrentDomain( obj.basestone )
+                this.manager.watchDomainMain( obj )
             }
         },
 
@@ -613,4 +620,23 @@ export default {
 .i-layer2 {
 }
 
+.i-chip {
+    background:
+        repeating-linear-gradient(90deg, transparent, transparent 50px,
+                                  rgba(255, 127, 0, 0.25) 50px, rgba(255, 127, 0, 0.25) 56px,
+                                  transparent 56px, transparent 63px,
+                                  rgba(255, 127, 0, 0.25) 63px, rgba(255, 127, 0, 0.25) 69px,
+                                  transparent 69px, transparent 116px,
+                                  rgba(255, 206, 0, 0.25) 116px, rgba(255, 206, 0, 0.25) 166px),
+        repeating-linear-gradient(0deg, transparent, transparent 50px,
+                                  rgba(255, 127, 0, 0.25) 50px, rgba(255, 127, 0, 0.25) 56px,
+                                  transparent 56px, transparent 63px,
+                                  rgba(255, 127, 0, 0.25) 63px, rgba(255, 127, 0, 0.25) 69px,
+                                  transparent 69px, transparent 116px,
+                                  rgba(255, 206, 0, 0.25) 116px, rgba(255, 206, 0, 0.25) 166px),
+        repeating-linear-gradient(-45deg, transparent, transparent 5px,
+                                  rgba(143, 77, 63, 0.25) 5px, rgba(143, 77, 63, 0.25) 10px),
+        repeating-linear-gradient(45deg, transparent, transparent 5px,
+                                  rgba(143, 77, 63, 0.25) 5px, rgba(143, 77, 63, 0.25) 10px);
+}
 </style>
