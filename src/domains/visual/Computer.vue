@@ -11,7 +11,7 @@
 
 <script>
 import MixinDomain from "../../core/mixin/Domain.js"
-import MixinSpirit from "../../core/mixin/Spirit.js"
+import MixinMeta from "../../core/mixin/Meta.js"
 
 import MemoryManager from './MemoryManager.vue'
 import ProcessManager from './ProcessManager.vue'
@@ -20,7 +20,7 @@ import UserTerminal from './UserTerminal.vue'
 
 
 export default {
-    mixins: [ MixinDomain, MixinSpirit ],
+    mixins: [ MixinDomain, MixinMeta ],
 
     name: 'VisualComputer',
 

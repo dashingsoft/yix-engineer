@@ -10,13 +10,13 @@
 import Vue from "vue"
 
 import MixinDomain from "../../core/mixin/Domain.js"
-import MixinSpirit from "../../core/mixin/Spirit.js"
+import MixinMeta from "../../core/mixin/Meta.js"
 
 import VisualMemoryView from './MemoryView.vue'
 
 
 export default {
-    mixins: [ MixinDomain, MixinSpirit ],
+    mixins: [ MixinDomain, MixinMeta ],
     name: 'VisualMemory',
     props: {
         basestone: Object,
