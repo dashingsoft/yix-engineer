@@ -13,7 +13,7 @@ var Manager = function ( width = 800, height = 600, items = [] ) {
 
     let scope = this
     let _mode = MODE.MASTER
-    let _angle = 25
+    let _angle = 10
     let _main
 
     // Property
@@ -147,6 +147,26 @@ var Manager = function ( width = 800, height = 600, items = [] ) {
                     tween.start()
                     _main = items[ index ]
                 }
+            }, 100 )
+        } )
+    }
+
+    this.watchDomainRelation = function ( domain ) {
+        let items = domain.viewStack.map( v => scope.findItem( v, true ) )
+        if ( ! items.length )
+            return scope.watchDomainMain( domain )
+
+        items.splice( 0, 0, scope.findItem( domain, true ) )
+        showStackItems( items )
+
+        items.slice( 1 ).forEach( item => item.renderer.domElement.style.opacity = 0 )
+
+        let refel = domain.$el
+        domain.$nextTick( () => {
+            window.setTimeout( () => {
+                let tween = items[ 1 ].createTweenFlowIn( refel )
+                if ( tween )
+                    tween.start()
             }, 100 )
         } )
     }

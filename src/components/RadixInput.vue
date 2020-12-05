@@ -76,5 +76,6 @@ pre {
 }
 input {
     border-width: 0 0 1px 0;
+    background-color: #F0F0F0;
 }
 </style>

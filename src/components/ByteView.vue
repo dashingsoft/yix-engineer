@@ -1,6 +1,6 @@
 <template>
-  <div class="yix-byteview">
-    <div class="yix-byteview-header">
+  <div class="y-byteview">
+    <div class="y-byteview-header">
       <span><pre>@</pre></span>
       <radix-input
         :minlength="1"
@@ -21,10 +21,10 @@
         v-model="selValue">
       </radix-input>
     </div>
-    <div class="yix-byteview-body">
-      <div class="yix-byteview-addr">
+    <div class="y-byteview-body">
+      <div class="y-byteview-addr">
       </div>
-      <div class="yix-byteview-data" @mouseup="onMouseup">
+      <div class="y-byteview-data" @mouseup="onMouseup">
       </div>
     </div>
   </div>
@@ -158,13 +158,13 @@ export default {
             this.foldlines = lines
         },
         clearHightlight() {
-            let el = this.$el.querySelector( '.yix-byteview-data' )
+            let el = this.$el.querySelector( '.y-byteview-data' )
             el.querySelectorAll('div.selected').forEach(
                 div => el.removeChild( div )
             )
         },
         highlight( start, size ) {
-            let el = this.$el.querySelector( '.yix-byteview-data' )
+            let el = this.$el.querySelector( '.y-byteview-data' )
 
             let padding = start % this.col
             let n = Math.floor( ( ( start - padding ) - ( this.addr - this.padding ) ) / this.col )
@@ -235,7 +235,7 @@ export default {
                     lines.push( p.toString( 16 ) )
             }
             lines.push( '</pre>' )
-            this.$el.querySelector( '.yix-byteview-addr' ).innerHTML = lines.join( '\n' )
+            this.$el.querySelector( '.y-byteview-addr' ).innerHTML = lines.join( '\n' )
 
             lines = [ '<pre class="header">' ]
             let s = []
@@ -281,7 +281,7 @@ export default {
             }
 
             lines.push( '</pre>' )
-            this.$el.querySelector( '.yix-byteview-data' ).innerHTML = lines.join( '\n' )
+            this.$el.querySelector( '.y-byteview-data' ).innerHTML = lines.join( '\n' )
 
             this.clearHightlight()
             if (this.selections)
@@ -294,21 +294,21 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
 
-.yix-byteview-header {
+.y-byteview-header {
     display: flex;
     margin-left: 6px;
 }
 
-.yix-byteview-header > * {
+.y-byteview-header > * {
     padding: 2px 4px;
 }
 
-.yix-byteview-header > span > pre {
+.y-byteview-header > span > pre {
     display: inline-block;
     vertial-align: middle;
 }
 
-.yix-byteview-body {
+.y-byteview-body {
     display: flex;
     flex-direction: row;
     text-align: left;
@@ -316,30 +316,30 @@ export default {
     padding: 6px;
 }
 
-.yix-byteview-body > div {
+.y-byteview-body > div {
     flex-grow: 0;
 }
 
-.yix-byteview pre {
+.y-byteview pre {
     margin: 0;
 }
 
-.yix-byteview pre.header {
+.y-byteview pre.header {
     font-weight: bold;
 }
 
-.yix-byteview-addr {
+.y-byteview-addr {
     margin: 0 16px 0 6px;
 }
 
-.yix-byteview-data {
+.y-byteview-data {
     position: relative;
     overflow: auto;
 
     padding: 0;
 }
 
-.yix-byteview-data > div.selected {
+.y-byteview-data > div.selected {
     position: absolute;
     background-color: #DCDFE6;
     opacity: .5;

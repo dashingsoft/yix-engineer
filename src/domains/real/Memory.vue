@@ -11,6 +11,7 @@ import MixinEntity from "../../core/mixin/Entity.js"
 
 import VisualMemory from '../visual/Memory.vue'
 import RealMemoryView from './MemoryView.vue'
+import RealMemoryView1 from './MemoryView1.vue'
 
 
 export default {
@@ -47,6 +48,15 @@ export default {
 
         let RealMemoryViewObject = Vue.extend( RealMemoryView )
         let view = new RealMemoryViewObject( {
+            propsData: {
+                basestone: this
+            }
+        } )
+        view.$mount()
+        this.viewStack.push( view )
+
+        RealMemoryViewObject = Vue.extend( RealMemoryView1 )
+        view = new RealMemoryViewObject( {
             propsData: {
                 basestone: this
             }

@@ -518,7 +518,7 @@ export default {
             else if ( action === 'relation' ) {
                 // this.runOptions.relationMode = ! this.runOptions.relationMode
                 if ( this.currentDomain )
-                    this.manager.watchDomainDetails ( this.currentDomain )
+                    this.manager.watchDomainRelation ( this.currentDomain )
             }
         },
 

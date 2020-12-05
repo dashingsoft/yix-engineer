@@ -76,7 +76,7 @@ export default {
 
     data() {
         return {
-            title: '内存读写视图',
+            title: '内存结构图',
         }
     },
 
@@ -101,12 +101,10 @@ export default {
 
 .m-body {
     flex-grow: 1;
-
     border: 2px solid #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+
+    text-align: center;
+    padding-top: 32px;
 }
 
 </style>

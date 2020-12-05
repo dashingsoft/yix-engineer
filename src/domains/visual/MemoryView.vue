@@ -30,7 +30,7 @@ export default {
 
     data() {
         return {
-            title: '内存数据视图',
+            title: '可视数据视图',
             addrs: [],
             contents: [],
         }

@@ -37,7 +37,7 @@
             :size="32"></Register>
         </div>
         <div class="m-center">
-          CPU
+          {{ title }}
         </div>
         <div class="m-right">
           <Register
@@ -99,7 +99,7 @@ export default {
 
     data() {
         return {
-            title: 'CPU 结构图',
+            title: 'CPU',
             registers: {
                 eip: 0,
                 eax: 0,

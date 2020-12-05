@@ -113,7 +113,10 @@ export default {
                 return this.activeLayer
             },
             set ( value ) {
-                this.$nextTick( () => this.$refs.table.setCurrentRow( this.currentRow ) )
+                this.$nextTick( () => {
+                    if ( this.currentRow )
+                        this.$nextTick( () => this.$refs.table.setCurrentRow( this.currentRow ) )
+                } )
                 let oldValue = this.tableData[0]
                 this.activeLayer = value
                 this.$emit( 'layer', 'select', this.tableData[0], oldValue )
