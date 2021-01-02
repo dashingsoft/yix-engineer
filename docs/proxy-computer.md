@@ -53,7 +53,10 @@ curl \
 
 成功返回 HTTP/1.1 200 OK
 
-如果是目录，则返回一个文件列表，否则返回文件内容
+如果是目录，则返回一个文件列表
+如果是文件，返回文件内容
+
+错误返回 HTTP/1.1 400 BAD_REQUEST
 
 例如
 
@@ -62,7 +65,7 @@ curl \
 
 ## 文件编译
 
-编译存在的程序文件。
+编译程序文件。
 
 请求地址
 
@@ -94,7 +97,7 @@ curl \
 curl \
   -X GET \
   -H "Content-Type: application/json" \
-  -d "course-0/foo.c"
+  -d '"course-0/foo.c"'
   http://localhost:9099/proxy/compiler/
 ```
 
