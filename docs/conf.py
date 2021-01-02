@@ -129,7 +129,7 @@ html_theme = 'sphinx_rtd_theme'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'images/yix-logo.png'
+html_logo = 'images/logo.png'
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -274,7 +274,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'yix-engineer', '易科引擎使用和设计文档',
-     author, '易科引擎', 'The engineer for yix application',
+     author, '易科引擎', '运行易科应用程序的引擎',
      'Miscellaneous'),
 ]
 
