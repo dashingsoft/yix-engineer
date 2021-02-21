@@ -165,7 +165,6 @@ export default {
 <style>
 
 .y-explorer {
-    border: 1px #DCDFE6 solid;
     height: 100%;
 }
 

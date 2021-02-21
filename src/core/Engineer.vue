@@ -1,46 +1,16 @@
 <template>
   <div class="y-engineer">
-    <CoreView
-      @page="onEventPage"
-      @living="onEventLiving"
-      :title="title"
-      v-show="isNormalMode">
-      <template v-slot:toolbar>
-        <el-button
-          size="mini"
-          title="切换缩略图"
-          :class="{ 'x-checked': runOptions.overlayMode }"
-          @click="$emit( 'view', 'overlay' )"
-          icon="el-icon-news"></el-button>
-        <el-button
-          size="mini"
-          title="显示视图关联"
-          :class="{ 'x-checked': runOptions.relationMode }"
-          @click="$emit( 'view', 'relation' )"
-          icon="el-icon-connection"></el-button>
-        <el-button
-          size="mini"
-          title="切换视图排列"
-          @click="$emit( 'domain', 'stack', currentDomain )"
-          icon="el-icon-copy-document"></el-button>
-        <el-button
-          size="mini"
-          title="切换多层视图"
-          @click="$emit( 'view', 'layer' )"
-          icon="el-icon-coin"></el-button>
-      </template>
-      <template v-slot:body>
-        <div class="v-left" v-bind:style="{ width: sidebar.width + 'px' }">
-          <ExplorerView
-            ref="explorer"
-            @layer="onEventLayer"
-            @domain="onEventDomain"
-            :main-domain="mainDomain"></ExplorerView>
-        </div>
-        <div class="v-right">
-        </div>
-      </template>
-    </CoreView>
+    <div class="v-body">
+      <div class="v-left" v-bind:style="{ width: sidebar.width + 'px' }">
+        <ExplorerView
+          ref="explorer"
+          @layer="onEventLayer"
+          @domain="onEventDomain"
+          :main-domain="mainDomain"></ExplorerView>
+      </div>
+      <div class="v-right">
+      </div>
+    </div>
     <CoreImager
       :layouts="activeLayouts"
       :scenes="scenes"
@@ -92,7 +62,6 @@
 </template>
 
 <script>
-import CoreView from './View.vue'
 import ExplorerView from './Explorer.vue'
 
 import MaterialPage from './Material.vue'
@@ -133,7 +102,6 @@ export default {
     name: 'Engineer',
 
     components: {
-        CoreView,
         ExplorerView,
 
         ForgePage,
@@ -268,13 +236,13 @@ export default {
             this.onKeyup( e )
         } )
 
-        this.y_domains = document.createElement( 'div' )
-        this.y_domains.className = 'x-full y-domains'
-        document.body.appendChild( this.y_domains )
+        this.y_previews = document.createElement( 'div' )
+        this.y_previews.className = 'x-full i-previews'
+        document.body.appendChild( this.y_previews )
 
-        this.i_relations = document.createElement( 'div' )
-        this.i_relations.className = 'i-relations'
-        document.body.appendChild( this.i_relations )
+        this.y_relations = document.createElement( 'div' )
+        this.y_relations.className = 'i-relations'
+        document.body.appendChild( this.y_relations )
 
         this.$on( 'living', this.onEventLiving )
         this.$on( 'page', this.onEventPage )
@@ -381,10 +349,11 @@ export default {
             this.sidebar.top = Math.round(
                 this.$el.querySelector( '.v-left' ).getBoundingClientRect().top )
 
+            let top = 0
             this.viewRects[ MODE.Normal ].left = this.sidebar.width
-            this.viewRects[ MODE.Normal ].top = this.sidebar.top
+            this.viewRects[ MODE.Normal ].top = top
             this.viewRects[ MODE.Normal ].width = width - this.sidebar.width
-            this.viewRects[ MODE.Normal ].height = height - this.sidebar.top
+            this.viewRects[ MODE.Normal ].height = height - top
 
             this.viewRects[ MODE.FullPage ].left = rect.left
             this.viewRects[ MODE.FullPage ].top = rect.top
@@ -575,7 +544,7 @@ export default {
     flex-grow: 1;
 }
 
-.y-domains {
+.i-previews {
     opacity: 0;
     z-index: -1;
 }
@@ -605,38 +574,61 @@ export default {
     cursor: pointer;
 }
 
-.i-relation {
+.m-relation {
     position: absolute;
     transform-origin: left top;
     z-index: 90;
 }
 
-.i-layer0 {
+.m-layer0 {
 }
 
-.i-layer1 {
+.m-layer1 {
 }
 
-.i-layer2 {
+.m-layer2 {
 }
 
-.i-chip {
-    background:
-        repeating-linear-gradient(90deg, transparent, transparent 50px,
-                                  rgba(255, 127, 0, 0.25) 50px, rgba(255, 127, 0, 0.25) 56px,
-                                  transparent 56px, transparent 63px,
-                                  rgba(255, 127, 0, 0.25) 63px, rgba(255, 127, 0, 0.25) 69px,
-                                  transparent 69px, transparent 116px,
-                                  rgba(255, 206, 0, 0.25) 116px, rgba(255, 206, 0, 0.25) 166px),
-        repeating-linear-gradient(0deg, transparent, transparent 50px,
-                                  rgba(255, 127, 0, 0.25) 50px, rgba(255, 127, 0, 0.25) 56px,
-                                  transparent 56px, transparent 63px,
-                                  rgba(255, 127, 0, 0.25) 63px, rgba(255, 127, 0, 0.25) 69px,
-                                  transparent 69px, transparent 116px,
-                                  rgba(255, 206, 0, 0.25) 116px, rgba(255, 206, 0, 0.25) 166px),
-        repeating-linear-gradient(-45deg, transparent, transparent 5px,
-                                  rgba(143, 77, 63, 0.25) 5px, rgba(143, 77, 63, 0.25) 10px),
-        repeating-linear-gradient(45deg, transparent, transparent 5px,
-                                  rgba(143, 77, 63, 0.25) 5px, rgba(143, 77, 63, 0.25) 10px);
+.y-topbar {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    right: 0;
+    z-index: 101;
 }
+
+.y-controlbox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.y-controlbox > * {
+    margin-right: 9px;
+}
+
+.y-controlbox img {
+    width: 1em;
+    height: 1em;
+}
+
+.y-controlbox button {
+    border: 0;
+    background: #F0F0F0;
+}
+
+.y-controlbox button:hover {
+    background: #F0F0F0;
+}
+
+.cb-navbar .y-controlbox button {
+    color: #f8f8f8;
+    background: #333;
+}
+
+.cb-navbar .y-controlbox button:hover {
+    color: #ccc;
+    background: #333;
+}
+
 </style>

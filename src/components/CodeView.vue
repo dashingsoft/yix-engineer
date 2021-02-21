@@ -1,6 +1,5 @@
 <template>
-    <div class="yix-codeview">
-      <div class="yix-editor"></div>
+    <div class="y-editor">
     </div>
 </template>
 
@@ -31,7 +30,7 @@ export default {
         },
     },
     mounted() {
-        this.editor = ace.edit( this.$el.querySelector( ".yix-editor" ), {
+        this.editor = ace.edit( this.$el, {
             mode: this.mode,
             theme: this.theme,
             fontSize: this.fontSize,
@@ -52,7 +51,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
-.yix-editor {
+.y-editor {
     width: 100%;
     height: 100%;
 }

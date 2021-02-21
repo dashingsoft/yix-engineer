@@ -13,7 +13,7 @@ export default {
 
     mounted () {
         if ( this.$root === this )
-            document.querySelector( '.y-domains' ).appendChild( this.$el )
+            document.querySelector( '.i-previews' ).appendChild( this.$el )
 
         this.$nextTick( () => {
             let size = this.getScreenSize()

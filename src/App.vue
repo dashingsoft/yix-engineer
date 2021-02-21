@@ -1,19 +1,36 @@
 <template>
   <div id="app">
-    <Engineer :title="title" ref="engineer"></Engineer>
+    <div class="titlebar">
+      <!-- <el-button -->
+      <!--   size="mini" -->
+      <!--   title="关闭视图" -->
+      <!--   @click="toggleView" -->
+      <!--   icon="el-icon-close"></el-button> -->
+      <el-button
+        size="mini"
+        title="YIX">
+        <img src="./assets/yix-logo.png" style="width: 1rem">
+      </el-button>
+    <span>{{ title }}</span>
+    <Controlbar></Controlbar>
+    </div>
+    <div class="v-body">
+      <Engineer :title="title" ref="engineer"></Engineer>
+    </div>
   </div>
 </template>
 
 <script>
 import Vue from "vue"
 import Engineer from './core/Engineer.vue'
+import Controlbar from './core/Controlbar.vue'
 import RealComputer from './domains/real/Computer.vue'
-
 
 export default {
     name: 'App',
     components: {
-        Engineer
+        Engineer,
+        Controlbar,
     },
     data () {
         return {
@@ -44,15 +61,6 @@ export default {
 </script>
 
 <style>
-#app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-}
-
 html, body {
     padding: 0;
     margin: 0;
@@ -64,4 +72,53 @@ canvas {
     z-order: -1;
 }
 
+#app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.titlebar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 0 0 6px;
+    background: #F0F0F0;
+    border-bottom: 1px #E4E7ED solid;
+}
+
+.titlebar > * {
+    padding-right: 6px;
+    flex-grow: 0;
+}
+
+.titlebar > span {
+    padding: 6px;
+}
+
+.titlebar > *:first-child {
+    padding: 0 9px;
+}
+
+.titlebar > *:last-child {
+    padding-right: 0;
+    flex-grow: 1;
+    text-align: right;
+}
+
+.titlebar button {
+    border: 0;
+    background: #F0F0F0;
+}
+
+.titlebar .selected {
+    border-color: #DCDFE6;
+}
+
+.titlebar .focused {
+    border-color: #909399;
+}
 </style>

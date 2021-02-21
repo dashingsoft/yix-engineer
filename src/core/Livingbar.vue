@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="y-controlbox">
+    <div class="y-controlbox y-topbar">
       <el-button-group>
         <el-button
           title="开始和继续"><img src="../assets/play.svg"/></el-button>
@@ -58,29 +58,4 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.y-controlbox {
-    position: absolute;
-    top: 6px;
-    left: 0;
-    right: 0;
-    z-index: 101;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.y-controlbox > * {
-    margin-right: 9px;
-}
-
-.y-controlbox img {
-    width: 1em;
-    height: 1em;
-}
-
-.y-controlbox button {
-    border: 0;
-    background: #F0F0F0;
-}
 </style>

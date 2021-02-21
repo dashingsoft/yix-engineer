@@ -115,7 +115,7 @@ var View = function ( domain, options = {} ) {
 
         let [ w, h ] = getDomainSize()
         let tempElement = el.cloneNode( true )
-        tempElement.className = 'i-relation'
+        tempElement.className = 'm-relation'
         tempElement.style.left = refrect.left + 'px'
         tempElement.style.top = refrect.top + 'px'
         relations.appendChild( tempElement )

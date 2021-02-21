@@ -31,6 +31,9 @@ export default {
         }
     },
 
+    mounted() {
+    },
+
     data() {
         return {
             title: "硬盘",

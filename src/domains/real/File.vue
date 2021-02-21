@@ -6,6 +6,11 @@
 <script>
 export default {
     name: 'RealFile',
+    props: {
+        filename: {
+            type: String
+        }
+    },
     data() {
         return {
             title: "文件",
