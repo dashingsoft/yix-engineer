@@ -621,14 +621,4 @@ export default {
     background: #F0F0F0;
 }
 
-.cb-navbar .y-controlbox button {
-    color: #f8f8f8;
-    background: #333;
-}
-
-.cb-navbar .y-controlbox button:hover {
-    color: #ccc;
-    background: #333;
-}
-
 </style>

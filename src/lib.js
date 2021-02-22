@@ -1,5 +1,8 @@
 import Engineer from './core/Engineer.vue'
 import Controlbar from './core/Controlbar.vue'
+import RealComputer from './domains/real/Computer.vue'
+
+export { RealComputer }
 
 export default {
     install ( Vue ) {
