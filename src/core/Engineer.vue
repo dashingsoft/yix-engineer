@@ -299,6 +299,7 @@ export default {
             // this.currentLayout.visible = false
             // this.currentLayout = this.layouts[ index ]
             // this.currentLayout.visible = true
+            console.log( 'select layout: ' + index )
         },
 
         removeLayout ( index ) {
