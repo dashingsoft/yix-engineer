@@ -7,6 +7,8 @@
 import * as THREE from 'three'
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js'
 import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
 // import { CSS3DRenderer, CSS3DObject } from './CSS3DRenderer.js'
 import { MapControls as Controls } from './Controls.js'
 
@@ -51,10 +53,11 @@ export default {
         this.height = height
 
         this.relCamera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
-        this.relCamera.position.set( 200, 200, 200 )
+        this.relCamera.position.set( 0, 0, 100 )
 
         this.relScene = new THREE.Scene()
         this.relScene.background = new THREE.Color( 0xf0f0f0 )
+        this.initRelScene()
 
         idleCamera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 )
         idleCamera.position.set( 200, 200, 200 )
@@ -165,6 +168,19 @@ export default {
                 mesh.scale.copy( object.scale )
                 // this.relScene.add( mesh )
             }
+        },
+
+        initRelScene () {
+            const loader = new GLTFLoader()
+            loader.load(
+                '../../public/models/raspberry_pi/scene.gltf',
+                 gltf => {
+                     this.relScene.add( gltf.scene )
+                 },
+                undefined,
+                function ( error ) {
+                    console.error( error )
+                } )
         },
 
         toggleBusy ( value ) {

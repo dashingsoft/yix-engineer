@@ -35,3 +35,7 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### Analysis gltf files
+
+Online gltf editor: https://www.gltfeditor.com/

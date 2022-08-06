@@ -350,14 +350,13 @@ export default {
             this.sidebar.top = Math.round(
                 this.$el.querySelector( '.v-left' ).getBoundingClientRect().top )
 
-            let top = 0
             this.viewRects[ MODE.Normal ].left = this.sidebar.width
-            this.viewRects[ MODE.Normal ].top = top
+            this.viewRects[ MODE.Normal ].top = 0
             this.viewRects[ MODE.Normal ].width = width - this.sidebar.width
-            this.viewRects[ MODE.Normal ].height = height - top
+            this.viewRects[ MODE.Normal ].height = height
 
-            this.viewRects[ MODE.FullPage ].left = rect.left
-            this.viewRects[ MODE.FullPage ].top = rect.top
+            this.viewRects[ MODE.FullPage ].left = 0
+            this.viewRects[ MODE.FullPage ].top = 0
             this.viewRects[ MODE.FullPage ].width = width
             this.viewRects[ MODE.FullPage ].height = height
 
